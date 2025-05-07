@@ -1,6 +1,7 @@
 **/.DS_Store
 .idea
 .gradle
+gradle
 build
 run
 gradlew

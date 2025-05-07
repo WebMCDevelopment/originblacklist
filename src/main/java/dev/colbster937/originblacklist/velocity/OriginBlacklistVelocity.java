@@ -3,24 +3,13 @@ package dev.colbster937.originblacklist.velocity;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.plugin.Plugin;
-import com.velocitypowered.api.plugin.Dependency;
 import com.velocitypowered.api.proxy.ProxyServer;
 import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftInitializePlayerEvent;
-import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
+import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
 import org.slf4j.Logger;
 
-@Plugin(
-        id = "originblacklist",
-        name = "OriginBlacklist",
-        version = "1.0.1",
-        authors = {"Colbster937"},
-        description = "A reimplementation of OriginBlacklist for EaglerXServer",
-        dependencies = {@Dependency(id = "eaglerxserver")}
-)
 public class OriginBlacklistVelocity {
 
     private final ProxyServer proxy;
@@ -47,12 +36,12 @@ public class OriginBlacklistVelocity {
     }
 
     @Subscribe
-    public void onLogin(EaglercraftInitializePlayerEvent event) {
+    public void onLogin(EaglercraftLoginEvent event) {
         Base.handleConnection(event);
     }
 
     @Subscribe
-    public void onMOTD(IEaglercraftMOTDEvent event) {
+    public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }
 }

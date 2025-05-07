@@ -15,6 +15,7 @@ basically just a reimplementation of originblacklist but for eaglerxserver
   <br>_<sub><span style="color:gray">Bungee and Bukkit are should work, but have bugs.</span></sub>_
 - [x] Send blacklists to a discord webhook
 - [ ] Blacklist subscription URLs
+- [ ] Simple blacklist command
 - [ ] Blacklist -> Whitelist
 - [ ] IP blacklisting
 
@@ -26,5 +27,5 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 $ git clone https://github.com/colbster937/originblacklist.git
 $ cd originblacklist
 $ gradle wrapper
-$ ./gradle.<bat|sh> shadowJar
+$ ./gradlew shadowJar
 ```

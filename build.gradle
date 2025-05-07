@@ -8,7 +8,9 @@ plugins {
 
 
 group = 'dev.colbster937'
-version = '1.0.1'
+version = '1.0.2'
+description = 'A reimplementation of OriginBlacklist for EaglerXServer'
+def targetJavaVersion = 17
 
 repositories {
     mavenCentral()
@@ -47,47 +49,36 @@ dependencies {
     compileOnly("net.lax1dude.eaglercraft.backend:api-bungee:1.0.0")
     compileOnly("net.lax1dude.eaglercraft.backend:api-bukkit:1.0.0")
     implementation("org.yaml:snakeyaml:2.2")
-    implementation("net.kyori:adventure-api:4.20.0")
     implementation("net.kyori:adventure-text-serializer-legacy:4.20.0")
     implementation("net.kyori:adventure-text-minimessage:4.20.0")
 }
 
 tasks {
     runVelocity {
-        // Configure the Velocity version for our task.
-        // This is the only required configuration besides applying the plugin.
-        // Your plugin's jar (or shadowJar if present) will be used automatically.
         velocityVersion("3.3.0-SNAPSHOT")
     }
 }
 
-def targetJavaVersion = 17
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
 }
 
+processResources {
+    filesMatching(['plugin.yml', 'bungee.yml', 'velocity-plugin.json']) {
+        expand(
+                version: project.version,
+                description: project.description
+        )
+    }
+}
+
 shadowJar {
     relocate 'org.yaml.snakeyaml', 'dev.colbster937.shaded.snakeyaml'
-    archiveClassifier.set('all')
+    archiveVersion.set('')
+    archiveClassifier.set('')
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release.set(targetJavaVersion)
 }
-
-/*def templateSource = file('src/main/templates')
-def templateDest = layout.buildDirectory.dir('generated/sources/templates')
-def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
-    def props = ['version': project.version]
-    task.inputs.properties props
-
-    task.from templateSource
-    task.into templateDest
-    task.expand props
-}
-
-sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
-
-project.idea.project.settings.taskTriggers.afterSync generateTemplates
-project.eclipse.synchronizationTasks(generateTemplates)*/

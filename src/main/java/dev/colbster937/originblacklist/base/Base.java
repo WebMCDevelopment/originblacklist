@@ -1,11 +1,10 @@
 package dev.colbster937.originblacklist.base;
 
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.IEaglerPlayer;
-import net.lax1dude.eaglercraft.backend.server.api.EnumWebSocketHeader;
-import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftInitializePlayerEvent;
+import net.lax1dude.eaglercraft.backend.server.api.*;
+import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
 
@@ -46,27 +45,30 @@ public class Base {
         void error(String msg);
     }
 
-    public static void handleConnection(IEaglercraftInitializePlayerEvent e) {
-        IEaglerPlayer plr = e.getPlayer();
-        String origin = plr.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
-        String brand = plr.getEaglerBrandString();
+    public static void handleConnection(IEaglercraftLoginEvent e) {
+        IEaglerLoginConnection conn = e.getLoginConnection();
+        String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
+        String brand = conn.getEaglerBrandString();
         if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
             for (String origin1 : config.blacklist.origins) {
                 if (matches(origin, origin1)) {
-                    plr.disconnect(kick("origin", "website", origin));
-                    webhook(plr, origin, brand, "origin");
+                    e.setKickMessage(kick("origin", "website", origin));
+                    webhook(conn, origin, brand, "origin");
                     return;
                 }
             }
         } else {
-            plr.disconnect(kick("origin", "website", origin));
-            webhook(plr, "null", brand, "origin");
+            if (origin != "null" || origin != null) {
+                e.setKickMessage(kick("origin", "website", origin));
+                webhook(conn, "null", brand, "origin");
+                return;
+            }
         }
         if (brand != "null" && brand != null) {
             for (String brand1 : config.blacklist.brands) {
                 if (matches(brand, brand1)) {
-                    plr.disconnect(kick("brand", "client", brand));
-                    webhook(plr, origin, brand, "brand");
+                    e.setKickMessage(kick("brand", "client", brand));
+                    webhook(conn, origin, brand, "brand");
                     return;
                 }
             }
@@ -82,9 +84,11 @@ public class Base {
                             .replace("%blocktype%", "origin")
                             .replace("%easyblocktype%", "website")
                             .replace("%blocked%", origin))
-                    .map(line -> LegacyComponentSerializer.legacySection()
-                            .serialize(MiniMessage.miniMessage().deserialize(line)))
-                    .collect(Collectors.toList());
+                    .map(line -> LegacyComponentSerializer.legacySection().serialize(
+                            MiniMessage.miniMessage().deserialize(
+                                    line
+                            )
+                    )).collect(Collectors.toList());
             if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
                 for (String origin1 : config.blacklist.origins) {
                     if (matches(origin, origin1)) {
@@ -93,7 +97,9 @@ public class Base {
                     }
                 }
             } else {
-                setMOTD(conn, m);
+                if (origin != "null" || origin != null) {
+                    setMOTD(conn, m);
+                }
             }
         }
     }
@@ -131,19 +137,16 @@ public class Base {
         return text1.toLowerCase().matches(text2.replace(".", "\\.").replaceAll("\\*", ".*").toLowerCase());
     }
 
-    public static String kick(String type, String easytype, String value) {
-        return LegacyComponentSerializer.legacySection().serialize(
-                MiniMessage.miniMessage().deserialize(
-                        config.messages.kick
-                                .replace("%blocktype%", type)
-                                .replace("%easyblocktype%", easytype)
-                                .replace("%blocked%", value)
-                )
+    public static Component kick(String type, String easytype, String value) {
+        return MiniMessage.miniMessage().deserialize(
+                config.messages.kick
+                        .replace("%blocktype%", type)
+                        .replace("%easyblocktype%", easytype)
+                        .replace("%blocked%", value)
         );
     }
 
-
-    public static void webhook(IEaglerPlayer plr, String origin, String brand, String type) {
+    public static void webhook(IEaglerPendingConnection plr, String origin, String brand, String type) {
         String webhook = config.discord.webhook;
         if (webhook == null || webhook.isBlank()) return;
 
@@ -165,7 +168,7 @@ public class Base {
             }
           ]
         }
-        """, type, plr.getUsername(), addr, protocol, origin, brand, userAgent, rewind);
+        """, type, plr.getAuthUsername(), addr, protocol, origin, brand, userAgent, rewind);
 
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(webhook).openConnection();
