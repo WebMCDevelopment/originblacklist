@@ -10,6 +10,8 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 
 ### Building
 ```
+$ git clone https://github.com/colbster937/originblacklist
+$ cd originblacklist
 $ gradle wrapper
 $ ./gradle.<bat|sh> shadowJar
 ```
