@@ -1,4 +1,4 @@
-name: Auto-update clients
+name: Build Plugin
 
 on:
   schedule:
