@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.8'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id("xyz.jpenilla.run-velocity") version "2.3.1"
+}
+
+
+group = 'dev.colbster937'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+    maven {
+        name = "sonatype"
+        url = "https://oss.sonatype.org/content/groups/public/"
+    }
+    maven {
+        name = "spigotmc-repo"
+        url = "https://hub.spigotmc.org/nexus/content/repositories/public/"
+    }
+    maven {
+        name = "md_5"
+        url = "https://repo.md-5.net/content/repositories/releases/"
+    }
+    maven {
+        name = "aikar"
+        url = "https://repo.aikar.co/nexus/content/groups/aikar/"
+    }
+    maven {
+        name = "lax1dude"
+        url = "https://repo.lax1dude.net/repository/releases/"
+    }
+}
+
+dependencies {
+    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
+    compileOnly("org.bukkit:bukkit:1.8-R0.1-SNAPSHOT")
+    compileOnly("net.md-5:bungeecord-api:1.8-SNAPSHOT")
+    compileOnly("net.lax1dude.eaglercraft.backend:api-velocity:1.0.0")
+    compileOnly("net.lax1dude.eaglercraft.backend:api-bungee:1.0.0")
+    compileOnly("net.lax1dude.eaglercraft.backend:api-bukkit:1.0.0")
+    implementation("org.yaml:snakeyaml:2.2")
+    implementation("net.kyori:adventure-api:4.20.0")
+    implementation("net.kyori:adventure-text-serializer-legacy:4.20.0")
+    implementation("net.kyori:adventure-text-minimessage:4.20.0")
+}
+
+tasks {
+    runVelocity {
+        // Configure the Velocity version for our task.
+        // This is the only required configuration besides applying the plugin.
+        // Your plugin's jar (or shadowJar if present) will be used automatically.
+        velocityVersion("3.3.0-SNAPSHOT")
+    }
+}
+
+def targetJavaVersion = 17
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+}
+
+shadowJar {
+    relocate 'org.yaml.snakeyaml', 'dev.colbster937.shaded.snakeyaml'
+    archiveClassifier.set('all')
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release.set(targetJavaVersion)
+}
+
+/*def templateSource = file('src/main/templates')
+def templateDest = layout.buildDirectory.dir('generated/sources/templates')
+def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
+    def props = ['version': project.version]
+    task.inputs.properties props
+
+    task.from templateSource
+    task.into templateDest
+    task.expand props
+}
+
+sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+
+project.idea.project.settings.taskTriggers.afterSync generateTemplates
+project.eclipse.synchronizationTasks(generateTemplates)*/
