@@ -3,6 +3,7 @@ package dev.colbster937.originblacklist.bukkit;
 import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.bukkit.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftInitializePlayerEvent;
+import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftMOTDEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +20,7 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
 
         Base.setApi(EaglerXServerAPI.instance());
         Base.reloadConfig();
+        Base.init();
 
         getCommand("originblacklist").setExecutor(new CommandBukkit());
         getServer().getPluginManager().registerEvents(this, this);
@@ -29,5 +31,10 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
     @EventHandler
     public void onLogin(EaglercraftInitializePlayerEvent event) {
         Base.handleConnection(event);
+    }
+
+    @EventHandler
+    public void onMOTD(EaglercraftMOTDEvent event) {
+        Base.handleMOTD(event);
     }
 }

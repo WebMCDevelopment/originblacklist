@@ -6,9 +6,21 @@ import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.IEaglerPlayer;
 import net.lax1dude.eaglercraft.backend.server.api.EnumWebSocketHeader;
 import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftInitializePlayerEvent;
+import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
+import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
+
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Base {
     private static LoggerAdapter adapter;
@@ -59,6 +71,60 @@ public class Base {
                 }
             }
         }
+    }
+
+    public static void handleMOTD(IEaglercraftMOTDEvent e) {
+        if (config.messages.motd.enabled) {
+            IMOTDConnection conn = e.getMOTDConnection();
+            String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
+            List<String> m = List.of(config.messages.motd.text.split("\n")).stream()
+                    .map(line -> line
+                            .replace("%blocktype%", "origin")
+                            .replace("%easyblocktype%", "website")
+                            .replace("%blocked%", origin))
+                    .map(line -> LegacyComponentSerializer.legacySection()
+                            .serialize(MiniMessage.miniMessage().deserialize(line)))
+                    .collect(Collectors.toList());
+            if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
+                for (String origin1 : config.blacklist.origins) {
+                    if (matches(origin, origin1)) {
+                        setMOTD(conn, m);
+                        return;
+                    }
+                }
+            } else {
+                setMOTD(conn, m);
+            }
+        }
+    }
+
+    public static void setMOTD(IMOTDConnection conn, List<String> m) {
+        conn.setServerMOTD(m);
+        conn.setPlayerTotal(0);
+        conn.setPlayerMax(0);
+        conn.setPlayerList(List.of());
+        if (config.messages.motd.icon != null && !config.messages.motd.icon.isEmpty())
+            try {
+                BufferedImage img = ImageIO.read(new File(config.messages.motd.icon));
+                if (img.getWidth() != 64 || img.getHeight() != 64) {
+                    getLogger().warn("Icon must be 64x64");
+                    return;
+                }
+                byte[] bytes = new byte[64 * 64 * 4];
+                for (int y = 0; y < 64; y++) {
+                    for (int x = 0; x < 64; x++) {
+                        int pixel = img.getRGB(x, y);
+                        int i = (y * 64 + x) * 4;
+                        bytes[i] = (byte) ((pixel >> 16) & 0xFF);
+                        bytes[i + 1] = (byte) ((pixel >> 8) & 0xFF);
+                        bytes[i + 2] = (byte) (pixel & 0xFF);
+                        bytes[i + 3] = (byte) ((pixel >> 24) & 0xFF);
+                    }
+                }
+                conn.setServerIcon(bytes);
+            } catch (IOException ex) {
+                getLogger().error(ex.toString());
+            }
     }
 
     public static boolean matches(String text1, String text2) {
@@ -116,6 +182,19 @@ public class Base {
             conn.getInputStream().close();
         } catch (Exception e) {
             getLogger().warn("Failed to send webhook: " + e);
+        }
+    }
+
+    public static void init() {
+        File motdIcon = new File(config.messages.motd.icon);
+        if (!motdIcon.exists()) {
+            try (InputStream in = ConfigManager.class.getResourceAsStream("/server-blocked.png")) {
+                if (in != null) {
+                    Files.copy(in, motdIcon.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                }
+            } catch (IOException e) {
+                getLogger().warn(e.toString());
+            }
         }
     }
 

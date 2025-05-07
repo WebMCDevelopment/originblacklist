@@ -1,5 +1,5 @@
 name: OriginBlacklist
-version: 1.0.0
+version: 1.0.1
 main: dev.colbster937.originblacklist.bukkit.OriginBlacklistBukkit
 description: A reimplementation of OriginBlacklist for EaglerXServer
 author: Colbster937

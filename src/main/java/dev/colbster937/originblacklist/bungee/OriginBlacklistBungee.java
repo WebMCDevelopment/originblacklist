@@ -3,6 +3,7 @@ package dev.colbster937.originblacklist.bungee;
 import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftInitializePlayerEvent;
+import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftMOTDEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -19,6 +20,7 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
 
         Base.setApi(EaglerXServerAPI.instance());
         Base.reloadConfig();
+        Base.init();
 
         getProxy().getPluginManager().registerCommand(this, new CommandBungee());
         getProxy().getPluginManager().registerListener(this, this);
@@ -29,5 +31,10 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
     @EventHandler
     public void onLogin(EaglercraftInitializePlayerEvent event) {
         Base.handleConnection(event);
+    }
+
+    @EventHandler
+    public void onMOTD(EaglercraftMOTDEvent event) {
+        Base.handleMOTD(event);
     }
 }

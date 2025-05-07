@@ -44,8 +44,6 @@ public class ConfigManager {
         public List<String> brands;
         public List<String> players;
         public boolean missing_origin;
-
-        public Blacklist() {}
     }
 
     public static class Discord {
@@ -54,5 +52,12 @@ public class ConfigManager {
 
     public static class Messages {
         public String kick;
+        public MOTD motd;
+    }
+
+    public static class MOTD {
+        public boolean enabled;
+        public String text;
+        public String icon;
     }
 }

@@ -9,12 +9,14 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftInitializePlayerEvent;
+import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
+import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
 import org.slf4j.Logger;
 
 @Plugin(
         id = "originblacklist",
         name = "OriginBlacklist",
-        version = "1.0.0",
+        version = "1.0.1",
         authors = {"Colbster937"},
         description = "A reimplementation of OriginBlacklist for EaglerXServer",
         dependencies = {@Dependency(id = "eaglerxserver")}
@@ -39,6 +41,7 @@ public class OriginBlacklistVelocity {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         Base.setApi(EaglerXServerAPI.instance());
         Base.reloadConfig();
+        Base.init();
         proxy.getCommandManager().register("originblacklist", new CommandVelocity());
         logger.info("Loaded Velocity plugin");
     }
@@ -46,5 +49,10 @@ public class OriginBlacklistVelocity {
     @Subscribe
     public void onLogin(EaglercraftInitializePlayerEvent event) {
         Base.handleConnection(event);
+    }
+
+    @Subscribe
+    public void onMOTD(IEaglercraftMOTDEvent event) {
+        Base.handleMOTD(event);
     }
 }
