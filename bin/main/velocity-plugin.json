@@ -1,0 +1,14 @@
+{
+  "id": "originblacklist",
+  "name": "OriginBlacklist",
+  "version": "${version}",
+  "description": "${description}",
+  "main": "dev.colbster937.originblacklist.velocity.OriginBlacklistVelocity",
+  "authors": ["Colbster937"],
+  "dependencies": [
+    {
+      "id": "eaglerxserver",
+      "optional": false
+    }
+  ]
+}

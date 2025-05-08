@@ -66,14 +66,14 @@ public class Base {
         if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
             for (String origin1 : config.blacklist.origins) {
                 if (matches(origin, origin1)) {
-                    e.setKickMessage(kick("origin", "website", origin));
+                    setKickMessage(e, kick("origin", "website", origin));
                     webhook(conn, origin, brand, "origin");
                     return;
                 }
             }
         } else {
             if (origin != "null" || origin != null) {
-                e.setKickMessage(kick("origin", "website", origin));
+                setKickMessage(e, kick("origin", "website", origin));
                 webhook(conn, "null", brand, "origin");
                 return;
             }
@@ -81,11 +81,20 @@ public class Base {
         if (brand != "null" && brand != null) {
             for (String brand1 : config.blacklist.brands) {
                 if (matches(brand, brand1)) {
-                    e.setKickMessage(kick("brand", "client", brand));
+                    setKickMessage(e, kick("brand", "client", brand));
                     webhook(conn, origin, brand, "brand");
                     return;
                 }
             }
+        }
+    }
+
+    public static void setKickMessage(IEaglercraftClientBrandEvent e, Component msg) {
+        try {
+            e.setKickMessage(msg);
+        } catch (Throwable ignored) {
+            String msg1 = LegacyComponentSerializer.legacySection().serialize(msg);
+            e.setKickMessage(msg1);
         }
     }
 
@@ -95,13 +104,13 @@ public class Base {
             String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
             List<String> m = List.of(config.messages.motd.text.split("\n")).stream()
                     .map(line -> line
-                            .replace("%blocktype%", "origin")
-                            .replace("%easyblocktype%", "website")
-                            .replace("%blocked%", origin))
+                        .replace("%blocktype%", "origin")
+                        .replace("%easyblocktype%", "website")
+                        .replace("%blocked%", origin))
                     .map(line -> LegacyComponentSerializer.legacySection().serialize(
-                            MiniMessage.miniMessage().deserialize(
-                                    line
-                            )
+                        MiniMessage.miniMessage().deserialize(
+                            line
+                        )
                     )).collect(Collectors.toList());
             if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
                 for (String origin1 : config.blacklist.origins) {
@@ -153,10 +162,10 @@ public class Base {
 
     public static Component kick(String type, String easytype, String value) {
         return MiniMessage.miniMessage().deserialize(
-                config.messages.kick
-                        .replace("%blocktype%", type)
-                        .replace("%easyblocktype%", easytype)
-                        .replace("%blocked%", value)
+            config.messages.kick
+                .replace("%blocktype%", type)
+                .replace("%easyblocktype%", easytype)
+                .replace("%blocked%", value)
         );
     }
 
@@ -166,8 +175,8 @@ public class Base {
 
         String addr = plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined";
         String protocol = plr.isEaglerXRewindPlayer()
-                ? (String.valueOf(plr.getRewindProtocolVersion()) != null ? String.valueOf(plr.getRewindProtocolVersion()) : "undefined")
-                : (String.valueOf(plr.getMinecraftProtocol()) != null ? String.valueOf(plr.getMinecraftProtocol()) : "undefined");
+            ? (String.valueOf(plr.getRewindProtocolVersion()) != null ? String.valueOf(plr.getRewindProtocolVersion()) : "undefined")
+            : (String.valueOf(plr.getMinecraftProtocol()) != null ? String.valueOf(plr.getMinecraftProtocol()) : "undefined");
         String rewind = plr.isEaglerXRewindPlayer() ? "Yes" : "No";
         String userAgent = plr.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
         if (userAgent == null || userAgent.isEmpty()) userAgent = "undefined";

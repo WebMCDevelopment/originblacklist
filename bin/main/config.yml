@@ -1,0 +1,69 @@
+messages:
+  # Valid Placeholders:
+  #   - %blocked% - The player's origin/brand that was blocked
+  #   - %blocktype% - Shows what the player was blocked for
+  #   - %easyblocktype% - Shows what the player was blocked for in an eagler-kid readable form
+
+  kick: |
+    <red>This %easyblocktype% is not allowed on the server!</red>
+    <dark_gray>»</dark_gray> <gray>%blocked%</gray> <dark_gray>«</dark_gray>
+    
+    <gray>Think this is a mistake? Join our discord:</gray>
+    <blue>discord.gg/changethisintheconfig</blue>
+
+  motd:
+    enabled: true
+    text: |
+      <red>This %easyblocktype% is not allowed!</red>
+      <dark_gray>»</dark_gray> <gray>%blocked%</gray> <dark_gray>«</dark_gray>
+    icon: "blacklisted.png"
+
+# Origin + Brand blacklist supports wildcards
+# Everything should be lowercase
+blacklist:
+  origins:
+    - "hack.example.com"
+  brands:
+    - "*dragonx*"
+    - "*piclient*"
+  missing_origin: false
+
+discord:
+  webhook: ""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# :>
