@@ -20,7 +20,7 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 - [ ] IP blacklisting
 
 ### Download
-**https://nightly.link/colbster937/originblacklist/workflows/build/main/OriginBlacklist.zip](https://nightly.link/colbster937/originblacklist/workflows/build/main/OriginBlacklist.zip)**
+**[https://nightly.link/colbster937/originblacklist/workflows/build/main/OriginBlacklist.zip](https://nightly.link/colbster937/originblacklist/workflows/build/main/OriginBlacklist.zip)**
 
 ### Building
 ```
