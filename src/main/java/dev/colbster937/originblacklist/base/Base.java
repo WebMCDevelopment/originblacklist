@@ -66,14 +66,14 @@ public class Base {
         if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
             for (String origin1 : config.blacklist.origins) {
                 if (matches(origin, origin1)) {
-                    setKickMessage(e, kick("origin", "website", origin));
+                    setKickMessage(e, kick("origin", "website", origin, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "origin");
                     return;
                 }
             }
         } else {
             if (origin != "null" || origin != null) {
-                setKickMessage(e, kick("origin", "website", origin));
+                setKickMessage(e, kick("origin", "website", origin, conn.getWebSocketHost()));
                 webhook(conn, "null", brand, "origin");
                 return;
             }
@@ -81,7 +81,7 @@ public class Base {
         if (brand != "null" && brand != null) {
             for (String brand1 : config.blacklist.brands) {
                 if (matches(brand, brand1)) {
-                    setKickMessage(e, kick("brand", "client", brand));
+                    setKickMessage(e, kick("brand", "client", brand, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "brand");
                     return;
                 }
@@ -104,9 +104,10 @@ public class Base {
             String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
             List<String> m = List.of(config.messages.motd.text.split("\n")).stream()
                     .map(line -> line
-                        .replace("%blocktype%", "origin")
-                        .replace("%easyblocktype%", "website")
-                        .replace("%blocked%", origin))
+                        .replaceAll("%blocktype%", "origin")
+                        .replaceAll("%easyblocktype%", "website")
+                        .replaceAll("%blocked%", origin)
+                        .replaceAll("%host%", conn.getWebSocketHost()))
                     .map(line -> LegacyComponentSerializer.legacySection().serialize(
                         MiniMessage.miniMessage().deserialize(
                             line
@@ -160,12 +161,13 @@ public class Base {
         return text1.toLowerCase().matches(text2.replace(".", "\\.").replaceAll("\\*", ".*").toLowerCase());
     }
 
-    public static Component kick(String type, String easytype, String value) {
+    public static Component kick(String type, String easytype, String value, String host) {
         return MiniMessage.miniMessage().deserialize(
             config.messages.kick
-                .replace("%blocktype%", type)
-                .replace("%easyblocktype%", easytype)
-                .replace("%blocked%", value)
+                .replaceAll("%blocktype%", type)
+                .replaceAll("%easyblocktype%", easytype)
+                .replaceAll("%blocked%", value)
+                .replaceAll("%host%", host)
         );
     }
 
@@ -178,6 +180,7 @@ public class Base {
             ? (String.valueOf(plr.getRewindProtocolVersion()) != null ? String.valueOf(plr.getRewindProtocolVersion()) : "undefined")
             : (String.valueOf(plr.getMinecraftProtocol()) != null ? String.valueOf(plr.getMinecraftProtocol()) : "undefined");
         String rewind = plr.isEaglerXRewindPlayer() ? "Yes" : "No";
+        String host = plr.getWebSocketHost();
         String userAgent = plr.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
         if (userAgent == null || userAgent.isEmpty()) userAgent = "undefined";
 
@@ -187,11 +190,11 @@ public class Base {
           "embeds": [
             {
               "title": "Player Information",
-              "description": "🎮 **Name:** %s\\n🏠 **Address:** %s\\n🌄 **PVN:** %s\\n🌐 **Origin:** %s\\n🔋 **Brand:** %s\\n🧊 **User Agent:** %s\\n⏪ **Rewind:** %s"
+              "description": "🎮 **Name:** %s\\n🏠 **Address:** %s\\n🌄 **PVN:** %s\\n🌐 **Origin:** %s\\n🔋 **Brand:** %s\\n🪑 **Host:** %s\\n🧊 **User Agent:** %s\\n⏪ **Rewind:** %s"
             }
           ]
         }
-        """, type, plr.getAuthUsername(), addr, protocol, origin, brand, userAgent, rewind);
+        """, type, plr.getAuthUsername(), addr, protocol, origin, brand, host, userAgent, rewind);
 
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(webhook).openConnection();
