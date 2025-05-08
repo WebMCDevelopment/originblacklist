@@ -13,7 +13,7 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        Plugin plugin = getServer().getPluginManager().getPlugin("eaglerxserver");
+        Plugin plugin = getServer().getPluginManager().getPlugin("EaglercraftXServer");
         if (plugin != null) {
             String version = plugin.getDescription().getVersion();
             if (!Base.checkVer(version, Base.apiVer)) {

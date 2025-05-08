@@ -12,7 +12,7 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
 
     @Override
     public void onEnable() {
-        Plugin plugin = getProxy().getPluginManager().getPlugin("eaglerxserver");
+        Plugin plugin = getProxy().getPluginManager().getPlugin("EaglercraftXServer");
         if (plugin != null) {
             String version = plugin.getDescription().getVersion();
             if (!Base.checkVer(version, Base.apiVer)) {
