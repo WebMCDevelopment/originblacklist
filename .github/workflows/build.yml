@@ -54,6 +54,7 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/OriginBlacklist.jar
           asset_name: OriginBlacklist.jar
+          asset_content_type: application/java-archive
 
       - uses: eregon/publish-release@v1
         env:
