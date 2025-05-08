@@ -46,6 +46,7 @@ jobs:
           release_name: dev
           draft: true
           prerelease: true
+          remove_assets: true
 
       - uses: actions/upload-release-asset@v1.0.1
         env:
