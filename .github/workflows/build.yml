@@ -33,15 +33,6 @@ jobs:
           name: OriginBlacklist
           path: build/libs/OriginBlacklist.jar
 
-      - name: Create Release
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/OriginBlacklist.jar
-          asset_name: OriginBlacklist.jar
-
       - name: Create Draft Release
         uses: actions/create-release@v1
         env:
@@ -52,8 +43,15 @@ jobs:
           draft: true
           prerelease: true
 
-      - name: Publish Release
-        uses: eregon/publish-release@v1
+      - uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/libs/OriginBlacklist.jar
+          asset_name: OriginBlacklist.jar
+
+      - uses: eregon/publish-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
