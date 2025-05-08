@@ -1,7 +1,0 @@
-name: OriginBlacklist
-version: ${version}
-main: dev.colbster937.originblacklist.bungee.OriginBlacklistBungee
-description: ${description}
-author: Colbster937
-depends:
-  - EaglercraftXServer
