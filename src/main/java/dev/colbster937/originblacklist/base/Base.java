@@ -4,7 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lax1dude.eaglercraft.backend.server.api.*;
-import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftLoginEvent;
+import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftClientBrandEvent;
 import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
 
@@ -34,6 +34,20 @@ public class Base {
         api = api1;
     }
 
+    public static String apiVer = "1.0.2";
+
+    public static boolean checkVer(String v1, String v2) {
+        String[] c = v1.split("\\.");
+        String[] r = v2.split("\\.");
+        for (int i = 0; i < Math.max(c.length, r.length); i++) {
+            int c1 = i < c.length ? Integer.parseInt(c[i]) : 0;
+            int r1 = i < r.length ? Integer.parseInt(r[i]) : 0;
+            if (c1 < r1) return false;
+            if (c1 > r1) return true;
+        }
+        return true;
+    }    
+
     public static LoggerAdapter getLogger() {
         if (adapter == null) throw new IllegalStateException("Logger not initialized!");
         return adapter;
@@ -45,8 +59,8 @@ public class Base {
         void error(String msg);
     }
 
-    public static void handleConnection(IEaglercraftLoginEvent e) {
-        IEaglerLoginConnection conn = e.getLoginConnection();
+    public static void handleConnection(IEaglercraftClientBrandEvent e) {
+        IEaglerPendingConnection conn = e.getPendingConnection();
         String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
         String brand = conn.getEaglerBrandString();
         if ((origin != "null" || origin != null) && !config.blacklist.missing_origin) {
