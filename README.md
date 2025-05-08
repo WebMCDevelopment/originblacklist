@@ -18,6 +18,7 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 - [ ] Simple blacklist command
 - [ ] Blacklist -> Whitelist
 - [ ] IP blacklisting
+- [ ] Update system
 
 ### Download
 **[https://github.com/colbster937/originblacklist/releases/latest/](https://github.com/colbster937/originblacklist/releases/latest/)**
