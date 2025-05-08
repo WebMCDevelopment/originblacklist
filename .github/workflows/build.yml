@@ -42,6 +42,16 @@ jobs:
           asset_path: ./build/libs/OriginBlacklist.jar
           asset_name: OriginBlacklist.jar
 
+      - name: Create Draft Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: dev
+          release_name: dev
+          draft: true
+          prerelease: true
+
       - name: Publish Release
         uses: eregon/publish-release@v1
         env:
