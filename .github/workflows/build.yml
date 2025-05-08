@@ -41,6 +41,8 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./build/libs/OriginBlacklist.jar
           asset_name: OriginBlacklist.jar
+
+      - name: Publish Release
       - uses: eregon/publish-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
