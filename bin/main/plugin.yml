@@ -1,0 +1,9 @@
+name: OriginBlacklist
+version: ${version}
+main: dev.colbster937.originblacklist.bukkit.OriginBlacklistBukkit
+description: ${description}
+author: Colbster937
+depend:
+  - EaglercraftXServer
+commands:
+  originblacklist:

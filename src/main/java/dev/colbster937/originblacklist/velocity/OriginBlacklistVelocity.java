@@ -6,7 +6,7 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.proxy.ProxyServer;
 import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftClientBrandEvent;
+import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
 import org.slf4j.Logger;
 
@@ -44,7 +44,7 @@ public class OriginBlacklistVelocity {
     }
 
     @Subscribe
-    public void onLogin(EaglercraftClientBrandEvent event) {
+    public void onLogin(EaglercraftLoginEvent event) {
         Base.handleConnection(event);
     }
 
