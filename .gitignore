@@ -4,5 +4,6 @@
 gradle
 build
 run
+bin
 gradlew
 gradlew.bat
