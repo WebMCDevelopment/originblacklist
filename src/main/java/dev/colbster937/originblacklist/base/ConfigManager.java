@@ -79,11 +79,17 @@ public class ConfigManager {
     public static class Messages {
         public String kick;
         public MOTD motd;
+        public Help help;
     }
 
     public static class MOTD {
         public boolean enabled;
         public String text;
         public String icon;
+    }
+
+    public static class Help {
+        public String generic;
+        public String player;
     }
 }

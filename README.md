@@ -8,6 +8,7 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 ### Features
 - [x] Origin Blacklisting
 - [x] Brand Blacklisting
+- [x] Username blacklisting
 - [x] Custom kick message
 - [x] Custom blacklist MOTD
 - [x] MiniMessage formatting for messages

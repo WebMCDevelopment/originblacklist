@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lax1dude.eaglercraft.backend.server.api.*;
-import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftClientBrandEvent;
 import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.event.IEaglercraftMOTDEvent;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
@@ -14,8 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
@@ -69,26 +66,33 @@ public class Base {
         IEaglerLoginConnection conn = e.getLoginConnection();
         String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
         String brand = conn.getEaglerBrandString();
+        String name = conn.getUsername();
 
-        if (origin != null && !origin.equals("null") && !config.blacklist.missing_origin) {
+        if (origin != null && !origin.equals("null")) {
             for (String origin1 : config.blacklist.origins) {
                 if (matches(origin, origin1)) {
-                    setKick(e, kick("origin", "website", origin, conn.getWebSocketHost()));
+                    setKick(e, formatKickMessage("origin", "website", origin, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "origin");
                     return;
                 }
             }
-        } else if (origin != null && !origin.equals("null")) {
-            setKick(e, kick("origin", "website", origin, conn.getWebSocketHost()));
-            webhook(conn, "null", brand, "origin");
-            return;
         }
 
         if (brand != null && !brand.equals("null")) {
             for (String brand1 : config.blacklist.brands) {
                 if (matches(brand, brand1)) {
-                    setKick(e, kick("brand", "client", brand, conn.getWebSocketHost()));
+                    setKick(e, formatKickMessage("brand", "client", brand, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "brand");
+                    return;
+                }
+            }
+        }
+
+        if (name != null && !name.equals("null")) {
+            for (String name1 : config.blacklist.players) {
+                if (matches(name, name1) || (name.length() > 16 || name.length() < 3)) {
+                    setKick(e, formatKickMessage("player", "username", name, conn.getWebSocketHost()));
+                    webhook(conn, origin, name, "player");
                     return;
                 }
             }
@@ -97,13 +101,8 @@ public class Base {
 
     public static void setKick(IEaglercraftLoginEvent e, Component msg) {
         try {
-            String redir = config.blacklist.blacklist_redirect;
-            if (redir.equals("") || redir.equals("null")) {
-                e.setKickMessage(msg);
-            } else {
-                e.setKickRedirect(redir);
-            }
             getLogger().info("Kicked " + e.getProfileUsername());
+            e.setKickMessage(msg);
         } catch (Throwable ignored) {
             String msg1 = LegacyComponentSerializer.legacySection().serialize(msg);
             e.setKickMessage(msg1);
@@ -124,7 +123,7 @@ public class Base {
                             MiniMessage.miniMessage().deserialize(line)))
                     .collect(Collectors.toList());
 
-            if (origin != null && !origin.equals("null") && !config.blacklist.missing_origin) {
+            if (origin != null && !origin.equals("null")) {
                 for (String origin1 : config.blacklist.origins) {
                     if (matches(origin, origin1)) {
                         setMOTD(conn, m);
@@ -173,9 +172,16 @@ public class Base {
         return text1.toLowerCase().matches(text2.replace(".", "\\.").replaceAll("\\*", ".*").toLowerCase());
     }
 
-    public static Component kick(String type, String easytype, String value, String host) {
+    public static Component formatKickMessage(String type, String easytype, String value, String host) {
+        String help = "";
+        if (type != "player") {
+            help = config.messages.help.generic;
+        } else {
+            help = config.messages.help.player;
+        }
         return MiniMessage.miniMessage().deserialize(
                 config.messages.kick
+                        .replaceAll("%help%", help)
                         .replaceAll("%blocktype%", type)
                         .replaceAll("%easyblocktype%", easytype)
                         .replaceAll("%blocked%", value)
