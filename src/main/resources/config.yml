@@ -31,7 +31,9 @@ messages:
 # Everything should be lowercase
 blacklist:
   origins:
-    - "eaglerhackedclients.vercel.app"
+    - "*eagler-clients.vercel.app*"
+    - "*eaglerhackedclients.vercel.app*"
+    - "*eaglerhacks.github.io*"
   brands:
     - "*dragonx*"
     - "*piclient*"
@@ -40,6 +42,7 @@ blacklist:
 
 discord:
   webhook: ""
+
 
 
 
