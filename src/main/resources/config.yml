@@ -31,7 +31,7 @@ messages:
 # Everything should be lowercase
 blacklist:
   origins:
-    - "hack.example.com"
+    - "eaglerhackedclients.vercel.app"
   brands:
     - "*dragonx*"
     - "*piclient*"
