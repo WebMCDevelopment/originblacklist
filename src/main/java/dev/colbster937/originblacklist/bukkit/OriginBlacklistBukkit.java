@@ -6,6 +6,7 @@ import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftLogin
 import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftMOTDEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
 
@@ -16,9 +17,9 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
         Plugin plugin = getServer().getPluginManager().getPlugin("EaglercraftXServer");
         if (plugin != null) {
             String version = plugin.getDescription().getVersion();
-            if (!Base.checkVer(version, Base.apiVer)) {
-                getLogger().severe("EaglerXServer " + Base.apiVer + " is required!");
-                throw new RuntimeException("Incompatible API version");
+            if (!Base.checkVer(version, Base.pluginVer)) {
+                getLogger().severe("EaglerXServer " + Base.pluginVer + " is required!");
+                throw new RuntimeException("Incompatible plugin version");
             }
         } else {
             throw new RuntimeException("Missing EaglerXServer");
@@ -49,5 +50,15 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
     @EventHandler
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
+    }
+
+    @EventHandler
+    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
+        String ip = event.getAddress().getHostAddress();
+        String name = event.getName();
+        String blacklisted = Base.handlePre(ip, name);
+        if (!blacklisted.equals("false")) {
+            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, blacklisted);
+        }
     }
 }

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class Base {
     private static LoggerAdapter adapter;
     private static IEaglerXServerAPI api;
-    private static ConfigManager config;
+    private static IPBlacklist ipblacklist;
 
     public static void setLogger(LoggerAdapter log) {
         adapter = log;
@@ -32,7 +32,9 @@ public class Base {
         api = api1;
     }
 
-    public static String apiVer = "1.0.2";
+    public static ConfigManager config;
+
+    public static String pluginVer = "1.0.2";
 
     public static boolean checkVer(String v1, String v2) {
         String[] c = v1.split("\\.");
@@ -67,11 +69,13 @@ public class Base {
         String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
         String brand = conn.getEaglerBrandString();
         String name = conn.getUsername();
+        String notAllowed1 = "not allowed on the server";
+        String notAllowed2 = "not allowed";
 
         if (origin != null && !origin.equals("null")) {
             for (String origin1 : config.blacklist.origins) {
                 if (matches(origin, origin1)) {
-                    setKick(e, formatKickMessage("origin", "website", origin, conn.getWebSocketHost()));
+                    setKick(e, formatKickMessage("origin", "website", notAllowed1, notAllowed2, origin, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "origin");
                     return;
                 }
@@ -81,7 +85,7 @@ public class Base {
         if (brand != null && !brand.equals("null")) {
             for (String brand1 : config.blacklist.brands) {
                 if (matches(brand, brand1)) {
-                    setKick(e, formatKickMessage("brand", "client", brand, conn.getWebSocketHost()));
+                    setKick(e, formatKickMessage("brand", "client", notAllowed1, notAllowed2, brand, conn.getWebSocketHost()));
                     webhook(conn, origin, brand, "brand");
                     return;
                 }
@@ -91,7 +95,7 @@ public class Base {
         if (name != null && !name.equals("null")) {
             for (String name1 : config.blacklist.players) {
                 if (matches(name, name1) || (name.length() > 16 || name.length() < 3)) {
-                    setKick(e, formatKickMessage("player", "username", name, conn.getWebSocketHost()));
+                    setKick(e, formatKickMessage("player", "username", notAllowed1, notAllowed2, name, conn.getWebSocketHost()));
                     webhook(conn, origin, name, "player");
                     return;
                 }
@@ -117,6 +121,8 @@ public class Base {
                     .map(line -> line
                             .replaceAll("%blocktype%", "origin")
                             .replaceAll("%easyblocktype%", "website")
+                            .replaceAll("%notallowed1%", "blacklisted")
+                            .replaceAll("%notallowed2%", "blacklisted")
                             .replaceAll("%blocked%", origin)
                             .replaceAll("%host%", conn.getWebSocketHost()))
                     .map(line -> LegacyComponentSerializer.legacySection().serialize(
@@ -130,8 +136,6 @@ public class Base {
                         return;
                     }
                 }
-            } else if (origin != null && !origin.equals("null")) {
-                setMOTD(conn, m);
             }
         }
     }
@@ -168,14 +172,28 @@ public class Base {
         }
     }
 
+    public static String handlePre(String ip, String name) {
+        if (ip != null && !ip.equalsIgnoreCase("null")) {
+            for (String ip1 : Base.config.blacklist.ips) {
+                if (ipblacklist.check(ip)) {
+                    Component kick = formatKickMessage("ip address", "ip", "blacklisted", "blacklisted", ip, "");
+                    return LegacyComponentSerializer.legacySection().serialize(kick);
+                }
+            }
+        }
+        return "false";
+    }
+
     public static boolean matches(String text1, String text2) {
         return text1.toLowerCase().matches(text2.replace(".", "\\.").replaceAll("\\*", ".*").toLowerCase());
     }
 
-    public static Component formatKickMessage(String type, String easytype, String value, String host) {
+    public static Component formatKickMessage(String type, String easytype, String notAllowed1, String notAllowed2, String value, String host) {
         String help = "";
         if (type != "player") {
             help = config.messages.help.generic;
+        } else if (type == "ip") {
+            help = config.messages.help.ip;
         } else {
             help = config.messages.help.player;
         }
@@ -184,6 +202,8 @@ public class Base {
                         .replaceAll("%help%", help)
                         .replaceAll("%blocktype%", type)
                         .replaceAll("%easyblocktype%", easytype)
+                        .replaceAll("%notallowed1%", notAllowed1)
+                        .replaceAll("%notallowed2%", notAllowed2)
                         .replaceAll("%blocked%", value)
                         .replaceAll("%host%", host));
     }
@@ -194,7 +214,7 @@ public class Base {
             return;
 
         CompletableFuture.runAsync(() -> {
-            String addr = (plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined:undefined").split(":")[0];
+            String addr = getAddr(plr);
             int protocol = !plr.isEaglerXRewindPlayer() ? plr.getMinecraftProtocol() : plr.getRewindProtocolVersion();
             String host = plr.getWebSocketHost();
             String userAgent = plr.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
@@ -235,6 +255,10 @@ public class Base {
         });
     }
 
+    public static String getAddr(IEaglerLoginConnection plr) {
+        return (plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined:undefined").split(":")[0];
+    }
+
     public static void init() {
         File motdIcon = new File(config.messages.motd.icon);
         if (!motdIcon.exists()) {
@@ -246,6 +270,7 @@ public class Base {
                 getLogger().warn(e.toString());
             }
         }
+        ipblacklist = new IPBlacklist();
     }
 
     public static void reloadConfig() {

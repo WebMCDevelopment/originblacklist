@@ -4,6 +4,7 @@ import dev.colbster937.originblacklist.base.Base;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftMOTDEvent;
+import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
@@ -15,9 +16,9 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
         Plugin plugin = getProxy().getPluginManager().getPlugin("EaglercraftXServer");
         if (plugin != null) {
             String version = plugin.getDescription().getVersion();
-            if (!Base.checkVer(version, Base.apiVer)) {
-                getLogger().severe("EaglerXServer " + Base.apiVer + " is required!");
-                throw new RuntimeException("Incompatible API version");
+            if (!Base.checkVer(version, Base.pluginVer)) {
+                getLogger().severe("EaglerXServer " + Base.pluginVer + " is required!");
+                throw new RuntimeException("Incompatible plugin version");
             }
         } else {
             throw new RuntimeException("Missing EaglerXServer");
@@ -48,5 +49,16 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
     @EventHandler
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
+    }
+
+    @EventHandler
+    public void onPreLogin(PreLoginEvent event) {
+        String ip = event.getConnection().getAddress().getAddress().getHostAddress();
+        String name = event.getConnection().getName();
+        String blacklisted = Base.handlePre(ip, name);
+        if (!blacklisted.equals("false")) {
+            event.setCancelReason(blacklisted);
+            event.setCancelled(true);
+        }
     }
 }

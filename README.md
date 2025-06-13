@@ -9,16 +9,15 @@ basically just a reimplementation of originblacklist but for eaglerxserver
 - [x] Origin Blacklisting
 - [x] Brand Blacklisting
 - [x] Username blacklisting
+- [x] IP blacklisting
 - [x] Custom kick message
 - [x] Custom blacklist MOTD
 - [x] MiniMessage formatting for messages
-- [x] Velocity, *Bungee, and *Bukkit support
-  <br>_<sub><span style="color:gray">Bungee and Bukkit are should work, but have bugs.</span></sub>_
+- [x] Velocity, Bungee, and Bukkit support
 - [x] Send blacklists to a discord webhook
+- [x] Simple blacklist command
 - [ ] Blacklist subscription URLs
-- [ ] Simple blacklist command
 - [ ] Blacklist -> Whitelist
-- [ ] IP blacklisting
 - [ ] Update system
 
 ### Download

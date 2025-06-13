@@ -1,13 +1,16 @@
 package dev.colbster937.originblacklist.velocity;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.proxy.ProxyServer;
 import dev.colbster937.originblacklist.base.Base;
+import net.kyori.adventure.text.Component;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
+import java.net.InetAddress;
 import org.slf4j.Logger;
 
 public class OriginBlacklistVelocity {
@@ -29,9 +32,9 @@ public class OriginBlacklistVelocity {
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         proxy.getPluginManager().getPlugin("eaglerxserver").ifPresentOrElse(plugin -> {
-            if (!Base.checkVer(plugin.getDescription().getVersion().orElse("1.0.0"), Base.apiVer)) {
-                logger.error("EaglerXServer " + Base.apiVer + " is required!");
-                throw new RuntimeException("Incompatible api version");
+            if (!Base.checkVer(plugin.getDescription().getVersion().orElse("1.0.0"), Base.pluginVer)) {
+                logger.error("EaglerXServer " + Base.pluginVer + " is required!");
+                throw new RuntimeException("Incompatible plugin version");
             }
         }, () -> {
             throw new RuntimeException("Missing EaglerXServer");
@@ -51,5 +54,15 @@ public class OriginBlacklistVelocity {
     @Subscribe
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
+    }
+
+    @Subscribe
+    public void onPreLogin(PreLoginEvent event) {
+        String ip = event.getConnection().getRemoteAddress().getAddress().toString();
+        String name = event.getUsername();
+        String blacklisted = Base.handlePre(ip, name);
+        if (!blacklisted.equals("false")) {
+            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(blacklisted)));
+        }
     }
 }
