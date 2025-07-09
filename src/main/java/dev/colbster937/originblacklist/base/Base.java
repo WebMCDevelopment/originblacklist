@@ -256,7 +256,9 @@ public class Base {
     }
 
     public static String getAddr(IEaglerLoginConnection plr) {
-        return (plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined:undefined").split(":")[0];
+        var addr1 = plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined:undefined";
+        var addr2 = addr1.lastIndexOf(':') != -1 ? addr1.substring(0, addr1.lastIndexOf(':')) : addr1;
+        return addr2;
     }
 
     public static void init() {
