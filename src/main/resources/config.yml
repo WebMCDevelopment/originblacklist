@@ -27,7 +27,7 @@ messages:
     enabled: true
     text: |
       <red>This %easyblocktype% is %notallowed2%!</red>
-      <dark_gray>»</dark_gray> <gray>%blocked%</gray> <dark_gray>«</dark_gray>
+      <dark_gray>»</dark_gray> <gray>%blocked%</gray>
     icon: "blacklisted.png"
 
 # Origin + Brand blacklist supports wildcards

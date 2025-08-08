@@ -69,6 +69,7 @@ public class Base {
         String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
         String brand = conn.getEaglerBrandString();
         String name = conn.getUsername();
+        String ip = getAddr(conn);
         String notAllowed1 = "not allowed on the server";
         String notAllowed2 = "not allowed";
 
@@ -96,9 +97,16 @@ public class Base {
             for (String name1 : config.blacklist.players) {
                 if (matches(name, name1) || (name.length() > 16 || name.length() < 3)) {
                     setKick(e, formatKickMessage("player", "username", notAllowed1, notAllowed2, name, conn.getWebSocketHost()));
-                    webhook(conn, origin, name, "player");
+                    webhook(conn, origin, brand, "player");
                     return;
                 }
+            }
+        }
+
+        if (ip != null && !ip.equalsIgnoreCase("null")) {
+            if (ipblacklist.check(ip)) {
+                setKick(e, formatKickMessage("ip address", "ip", notAllowed1, notAllowed2, ip, conn.getWebSocketHost()));
+                webhook(conn, origin, brand, "ip");
             }
         }
     }
@@ -114,30 +122,61 @@ public class Base {
     }
 
     public static void handleMOTD(IEaglercraftMOTDEvent e) {
-        if (config.messages.motd.enabled) {
-            IMOTDConnection conn = e.getMOTDConnection();
-            String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
-            List<String> m = List.of(config.messages.motd.text.split("\n")).stream()
-                    .map(line -> line
-                            .replaceAll("%blocktype%", "origin")
-                            .replaceAll("%easyblocktype%", "website")
-                            .replaceAll("%notallowed1%", "blacklisted")
-                            .replaceAll("%notallowed2%", "blacklisted")
-                            .replaceAll("%blocked%", origin)
-                            .replaceAll("%host%", conn.getWebSocketHost()))
-                    .map(line -> LegacyComponentSerializer.legacySection().serialize(
-                            MiniMessage.miniMessage().deserialize(line)))
-                    .collect(Collectors.toList());
+        if (!config.messages.motd.enabled) return;
 
-            if (origin != null && !origin.equals("null")) {
-                for (String origin1 : config.blacklist.origins) {
-                    if (matches(origin, origin1)) {
-                        setMOTD(conn, m);
-                        return;
-                    }
+        IMOTDConnection conn = e.getMOTDConnection();
+        String origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
+        String host = conn.getWebSocketHost() != null ? conn.getWebSocketHost() : "";
+        String ip = getAddr(conn);
+
+        String blocktype1 = null;
+        String easyblocktype1 = null;
+        String blocked1 = null;
+
+        if (origin != null && !"null".equals(origin)) {
+            for (String origin2 : config.blacklist.origins) {
+                if (matches(origin, origin2)) {
+                    blocktype1 = "origin";
+                    easyblocktype1 = "website";
+                    blocked1 = origin;
+                    break;
                 }
             }
         }
+
+        if (blocktype1 == null && ip != null && !"null".equalsIgnoreCase(ip)) {
+            boolean blocked = ipblacklist != null && ipblacklist.check(ip);
+            if (!blocked) {
+                for (String ip2 : config.blacklist.ips) {
+                    if (matches(ip, ip2)) { blocked = true; break; }
+                }
+            }
+            if (blocked) {
+                blocktype1 = "ip address";
+                easyblocktype1 = "ip";
+                blocked1 = ip;
+            }
+        }
+
+        if (blocktype1 == null) return;
+
+        final String finalBlocktype = blocktype1;
+        final String finalEasyblocktype = easyblocktype1;
+        final String finalBlocked = blocked1;
+
+        List<String> m = List.of(config.messages.motd.text.split("\n")).stream()
+                .map(line -> line
+                        .replace("%blocktype%", finalBlocktype)
+                        .replace("%easyblocktype%", finalEasyblocktype)
+                        .replace("%notallowed1%", "blacklisted")
+                        .replace("%notallowed2%", "blacklisted")
+                        .replace("%blocked%", finalBlocked)
+                        .replace("%host%", host))
+                .map(line -> LegacyComponentSerializer.legacySection()
+                        .serialize(MiniMessage.miniMessage().deserialize(line)))
+                .collect(Collectors.toList());
+
+        setMOTD(conn, m);
     }
 
     public static void setMOTD(IMOTDConnection conn, List<String> m) {
@@ -172,30 +211,18 @@ public class Base {
         }
     }
 
-    public static String handlePre(String ip, String name) {
-        if (ip != null && !ip.equalsIgnoreCase("null")) {
-            for (String ip1 : Base.config.blacklist.ips) {
-                if (ipblacklist.check(ip)) {
-                    Component kick = formatKickMessage("ip address", "ip", "blacklisted", "blacklisted", ip, "");
-                    return LegacyComponentSerializer.legacySection().serialize(kick);
-                }
-            }
-        }
-        return "false";
-    }
-
     public static boolean matches(String text1, String text2) {
         return text1.toLowerCase().matches(text2.replace(".", "\\.").replaceAll("\\*", ".*").toLowerCase());
     }
 
     public static Component formatKickMessage(String type, String easytype, String notAllowed1, String notAllowed2, String value, String host) {
         String help = "";
-        if (type != "player") {
-            help = config.messages.help.generic;
-        } else if (type == "ip") {
+        if ("player".equals(type)) {
+            help = config.messages.help.player;
+        } else if ("ip address".equals(type)) {
             help = config.messages.help.ip;
         } else {
-            help = config.messages.help.player;
+            help = config.messages.help.generic;
         }
         return MiniMessage.miniMessage().deserialize(
                 config.messages.kick
@@ -229,7 +256,7 @@ public class Base {
                               "embeds": [
                                 {
                                   "title": "Player Information",
-                                  "description": "🎮 **Name:** %s\\n🏠 **IP:** %s\\n🌄 **PVN:** %s\\n🌐 **Origin:** %s\\n🔋 **Brand:** %s\\n🪑 **Host:** %s\\n🧊 **User Agent:** %s\\n⏪ **Rewind:** %s"
+                                  "description": "🎮 **Name:** %s\\n🏠 **IP:** %s\\n🌄 **PVN:** %s\\n🌐 **Origin:** %s\\n🔋 **Brand:** %s\\n🪑 **Host:** %s\\n🧊 **UA:** %s\\n⏪ **Rewind:** %s"
                                 }
                               ]
                             }
@@ -255,8 +282,14 @@ public class Base {
         });
     }
 
-    public static String getAddr(IEaglerLoginConnection plr) {
-        var addr1 = plr.getPlayerAddress() != null ? plr.getPlayerAddress().toString().substring(1) : "undefined:undefined";
+    public static String getAddr(IEaglerLoginConnection conn) {
+        var addr1 = conn.getPlayerAddress() != null ? conn.getPlayerAddress().toString().substring(1) : "0.0.0.0:0";
+        var addr2 = addr1.lastIndexOf(':') != -1 ? addr1.substring(0, addr1.lastIndexOf(':')) : addr1;
+        return addr2;
+    }
+
+    public static String getAddr(IMOTDConnection conn) {
+        var addr1 = conn.getSocketAddress() != null ? conn.getSocketAddress().toString().substring(1) : "0.0.0.0:0";
         var addr2 = addr1.lastIndexOf(':') != -1 ? addr1.substring(0, addr1.lastIndexOf(':')) : addr1;
         return addr2;
     }

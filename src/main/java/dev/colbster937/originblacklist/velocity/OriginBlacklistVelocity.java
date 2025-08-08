@@ -55,14 +55,4 @@ public class OriginBlacklistVelocity {
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }
-
-    @Subscribe
-    public void onPreLogin(PreLoginEvent event) {
-        String ip = event.getConnection().getRemoteAddress().getAddress().toString();
-        String name = event.getUsername();
-        String blacklisted = Base.handlePre(ip, name);
-        if (!blacklisted.equals("false")) {
-            event.setResult(PreLoginEvent.PreLoginComponentResult.denied(Component.text(blacklisted)));
-        }
-    }
 }

@@ -50,15 +50,4 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }
-
-    @EventHandler
-    public void onPreLogin(PreLoginEvent event) {
-        String ip = event.getConnection().getAddress().getAddress().getHostAddress();
-        String name = event.getConnection().getName();
-        String blacklisted = Base.handlePre(ip, name);
-        if (!blacklisted.equals("false")) {
-            event.setCancelReason(blacklisted);
-            event.setCancelled(true);
-        }
-    }
 }

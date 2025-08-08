@@ -51,14 +51,4 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }
-
-    @EventHandler
-    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
-        String ip = event.getAddress().getHostAddress();
-        String name = event.getName();
-        String blacklisted = Base.handlePre(ip, name);
-        if (!blacklisted.equals("false")) {
-            event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, blacklisted);
-        }
-    }
 }
