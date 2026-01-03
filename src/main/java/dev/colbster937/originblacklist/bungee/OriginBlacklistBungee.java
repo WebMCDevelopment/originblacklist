@@ -8,6 +8,7 @@ import net.md_5.bungee.api.event.PreLoginEvent;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
+import net.md_5.bungee.event.EventPriority;
 
 public class OriginBlacklistBungee extends Plugin implements Listener {
 
@@ -46,7 +47,7 @@ public class OriginBlacklistBungee extends Plugin implements Listener {
         Base.handleConnection(event);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }
