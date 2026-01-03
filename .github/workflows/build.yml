@@ -39,7 +39,7 @@ jobs:
       - name: Extract Version
         id: version
         run: |
-          VERSION=$(grep "^version" build.gradle | head -n 1 | cut -d\' -f2)
+          VERSION="$(./gradlew -q properties | sed -n 's/^version: //p' | head -n 1)"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Remove Existing Release

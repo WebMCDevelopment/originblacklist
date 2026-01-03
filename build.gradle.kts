@@ -24,7 +24,6 @@ repositories {
 
 dependencies {
   compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-  annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
   compileOnly("org.bukkit:bukkit:1.8-R0.1-SNAPSHOT")
   compileOnly("net.md-5:bungeecord-api:1.8-SNAPSHOT")
   compileOnly("net.lax1dude.eaglercraft.backend:api-velocity:1.0.0")
@@ -34,6 +33,7 @@ dependencies {
   implementation("net.kyori:adventure-text-serializer-legacy:4.20.0")
   implementation("net.kyori:adventure-text-minimessage:4.20.0")
   implementation("com.github.seancfoley:ipaddress:5.3.4")
+  annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
 }
 
 tasks {
