@@ -28,7 +28,7 @@ jobs:
       - name: Build Jar
         run: |
           gradle wrapper
-          ./gradlew shadowJar
+          ./gradlew clean shadowJar
 
       - name: Publish Jar
         uses: actions/upload-artifact@v4
