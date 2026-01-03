@@ -5,8 +5,9 @@ import net.lax1dude.eaglercraft.backend.server.api.bukkit.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftMOTDEvent;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.Plugin;
 
@@ -47,7 +48,7 @@ public class OriginBlacklistBukkit extends JavaPlugin implements Listener {
         Base.handleConnection(event);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }

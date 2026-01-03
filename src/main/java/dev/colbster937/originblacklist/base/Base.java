@@ -209,6 +209,8 @@ public class Base {
                 getLogger().error(ex.toString());
             }
         }
+        conn.sendToUser();
+        conn.disconnect();
     }
 
     public static boolean matches(String text1, String text2) {

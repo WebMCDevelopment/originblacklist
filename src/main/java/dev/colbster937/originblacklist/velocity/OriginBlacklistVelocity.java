@@ -1,6 +1,7 @@
 package dev.colbster937.originblacklist.velocity;
 
 import com.google.inject.Inject;
+import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.Subscribe;
@@ -51,7 +52,7 @@ public class OriginBlacklistVelocity {
         Base.handleConnection(event);
     }
 
-    @Subscribe
+    @Subscribe(order = PostOrder.LAST)
     public void onMOTD(EaglercraftMOTDEvent event) {
         Base.handleMOTD(event);
     }

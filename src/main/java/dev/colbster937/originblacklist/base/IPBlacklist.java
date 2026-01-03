@@ -22,6 +22,9 @@ public class IPBlacklist {
             if (addr.startsWith("/")) {
                 addr1 = addr.substring(1);
             }
+            if (addr1.startsWith("[") && addr1.endsWith("]")) {
+                addr1 = addr1.substring(1, addr1.length() - 1);
+            }
             ip = new IPAddressString(addr1).toAddress();
         } catch (AddressStringException e) {
             throw new RuntimeException("Invalid IP address: " + addr, e);
