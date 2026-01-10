@@ -9,12 +9,13 @@
 - [x] Client brand based blacklisting
 - [x] Username based blacklisting
 - [x] IP based blacklisting
-- [x] Json5 based configuration
+- [x] JSON5 based configuration
 - [x] Kick message customization
 - [x] Blacklist MOTD customization
 - [x] MiniMessage and legacy formattings supported
 - [x] Plugin update checker
-- [ ] Send blacklist logs to a webhook
+- [x] Send blacklist logs to a webhook
+- [ ] Ingame blacklist management command
 - [ ] Subscribe to an auto-updating blacklist
 - [ ] Reverse blacklist (whitelist)
 

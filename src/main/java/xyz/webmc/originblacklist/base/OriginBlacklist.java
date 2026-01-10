@@ -2,6 +2,7 @@ package xyz.webmc.originblacklist.base;
 
 import xyz.webmc.originblacklist.base.config.OriginBlacklistConfig;
 import xyz.webmc.originblacklist.base.enums.EnumBlacklistType;
+import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
@@ -9,9 +10,13 @@ import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.base.util.UpdateChecker;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.semver4j.Semver;
@@ -25,12 +30,14 @@ import inet.ipaddr.IPAddressString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.lax1dude.eaglercraft.backend.server.api.EnumWebSocketHeader;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerLoginConnection;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
 
 public final class OriginBlacklist {
   public static final Semver REQUIRED_API_VER = new Semver("1.0.2");
-  public static final String GENERIC_STR = "generic";
-  public static final String UNKNOWN_STR = "unknown";
+  public static final String GENERIC_STR = "GENERIC";
+  public static final String UNKNOWN_STR = "UNKNOWN";
   public static final String PLUGIN_REPO = "WebMCDevelopment/originblacklist";
   public static final int BSTATS_ID = 28776;
 
@@ -66,6 +73,7 @@ public final class OriginBlacklist {
       this.plugin.kickPlayer(this.getBlacklistedComponent("kick", blacklisted.getArrayString(),
           blacklisted.getAltString(), blacklisted.getString(), "not allowed", "not allowed on the server",
           blacklisted_value, blacklisted.getActionString()), event);
+      this.sendWebhooks(event, blacklisted);
       final String name = player.getName();
       if (isNonNull(name)) {
         this.plugin.log(EnumLogLevel.INFO, "Prevented blacklisted player " + name + " from joining.");
@@ -94,7 +102,7 @@ public final class OriginBlacklist {
   public final boolean isDebugEnabled() {
     return this.config.get("debug").getAsBoolean();
   }
-  
+
   public final boolean isMetricsEnabled() {
     return this.config.get("bStats").getAsBoolean();
   }
@@ -185,14 +193,105 @@ public final class OriginBlacklist {
     return MiniMessage.miniMessage().deserialize(str);
   }
 
+  private final void sendWebhooks(final OriginBlacklistLoginEvent event, final EnumBlacklistType type) {
+    Json5Element element = this.config.get("discord.enabled");
+    if (element.getAsBoolean()) {
+      final OPlayer player = event.getPlayer();
+      final EnumConnectionType connType = event.getConnectionType();
+      final String userAgent;
+      if (connType == EnumConnectionType.EAGLER) {
+        final IEaglerLoginConnection loginConn = event.getEaglerEvent().getLoginConnection();
+        userAgent = loginConn.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
+      } else {
+        userAgent = UNKNOWN_STR;
+      }
+      final byte[] payload = String.format(
+        """
+          {
+            "content": "Blocked a blacklisted %s from joining",
+            "embeds": [
+              {
+                "title": "-------- Player Information --------",
+                "description": "**→ Name:** %s\\n**→ Origin:** %s\\n**→ Brand:** %s\\n**→ IP Address:** %s\\n**→ Protocol Version:** %s\\n**→ User Agent:** %s\\n**→ Rewind:** %s\\n**→ Player Type:** %s",
+                "color": 15801922,
+                "fields": [],
+                "footer": {
+                  "text": "OriginBlacklist v%s",
+                  "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/icon.png"
+                }
+              }
+            ],
+            "components": [
+              {
+                "type": 1,
+                "components": [
+                  {
+                    "type": 2,
+                    "style": 5,
+                    "label": "Get the Plugin",
+                    "url": "https://github.com/%s",
+                    "emoji": {
+                      "name": "🌐"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        """,
+        type.getAltString(),
+        player.getName().replaceAll("_", "\\_"),
+        player.getOrigin(),
+        player.getBrand(),
+        player.getAddr(),
+        player.getPVN(),
+        userAgent,
+        player.isRewind() ? "YES" : "NO",
+        connType.toString(),
+        this.plugin.getPluginVersion(),
+        PLUGIN_REPO,
+        PLUGIN_REPO
+      ).getBytes();
+      element = this.config.get("discord.webhook_urls");
+      if (element instanceof Json5Array) {
+        for (final Json5Element _element : element.getAsJson5Array()) {
+          CompletableFuture.runAsync(() -> {
+            try {
+              final URL url = new URL(_element.getAsString());
+              final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+              conn.setRequestMethod("POST");
+              conn.setRequestProperty("Content-Type", "application/json");
+              conn.setDoOutput(true);
+              conn.setConnectTimeout(5000);
+              conn.setReadTimeout(5000);
+              conn.connect();
+              final OutputStream os = conn.getOutputStream();
+              os.write(payload);
+              os.close();
+
+              final int code = conn.getResponseCode();
+              if (code < 200 || code >= 300) {
+                this.plugin.log(EnumLogLevel.WARN, "Webhook failed (HTTP " + code + ")");
+              }
+
+              conn.disconnect();
+            } catch (Throwable t) {
+              t.printStackTrace();
+            }
+          });
+        }
+      }
+    }
+  }
+
   private final void checkForUpdate() {
-    (new Thread(() -> {
+    CompletableFuture.runAsync(() -> {
       this.updateAvailable = UpdateChecker.checkForUpdate(PLUGIN_REPO, this.plugin.getPluginVersion(),
           this.config.get("update_checker.allow_snapshots").getAsBoolean());
       if (this.updateAvailable) {
         this.plugin.log(EnumLogLevel.INFO, "Update Available! Download at https://github.com/" + PLUGIN_REPO + ".git");
       }
-    })).run();
+    });
   }
 
   public static final String getComponentString(final Component comp) {

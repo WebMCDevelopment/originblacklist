@@ -18,7 +18,7 @@ public enum EnumBlacklistType {
     this.str = str;
     this.alt = alt;
     this.arr = arr;
-    this.act = OriginBlacklist.isNonNull(act) ? act : OriginBlacklist.GENERIC_STR;
+    this.act = OriginBlacklist.isNonNull(act) ? act : OriginBlacklist.GENERIC_STR.toLowerCase();
   }
 
   public final String getString() {

@@ -120,7 +120,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   @Subscribe(order = PostOrder.FIRST)
   public final void onJavaLogin(final PreLoginEvent event) {
     final OPlayer player = new OPlayer(null, event.getUsername(), event.getUniqueId(),
-        event.getConnection().getRemoteAddress().toString(), null);
+        event.getConnection().getRemoteAddress().toString(), OriginBlacklist.UNKNOWN_STR, event.getConnection().getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -128,14 +128,14 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   public final void onJavaHandshake(final PlayerClientBrandEvent event) {
     final Player aPlayer = (Player) event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getUsername(), aPlayer.getUniqueId(),
-        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand());
+        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand(), event.getPlayer().getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
 
   @Subscribe(order = PostOrder.LAST)
   public final void onJavaMOTD(final ProxyPingEvent event) {
     final OPlayer player = new OPlayer(null, null, null, event.getConnection().getRemoteAddress().getHostString(),
-        null);
+        null, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 

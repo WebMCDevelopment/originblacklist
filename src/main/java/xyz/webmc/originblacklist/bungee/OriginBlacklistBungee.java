@@ -104,19 +104,19 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   public final void onJavaLogin(final PostLoginEvent event) {
     final ProxiedPlayer aPlayer = event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getName(), aPlayer.getUniqueId(),
-        aPlayer.getAddress().toString(), aPlayer.getClientBrand());
+        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), event.getPlayer().getPendingConnection().getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onJavaHandshake(final PreLoginEvent event) {
-    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), null);
+    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), OriginBlacklist.UNKNOWN_STR, event.getConnection().getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public final void onJavaMOTD(final ProxyPingEvent event) {
-    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), null);
+    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), null, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 

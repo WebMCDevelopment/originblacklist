@@ -16,28 +16,37 @@ public final class OPlayer {
   private final String name;
   private final UUID uuid;
   private final String brand;
+  private final boolean rewind;
+  private final int pvn;
 
   public OPlayer(final IEaglerConnection conn, final String name, final UUID uuid, final String addr,
-      final String brand) {
+      final String brand, final int pvn) {
     this.name = name;
     this.uuid = uuid;
     if (conn != null) {
       this.origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
       this.addr = formatSocketAddress(conn.getSocketAddress());
       if (conn instanceof IEaglerLoginConnection) {
-        this.brand = ((IEaglerLoginConnection) conn).getEaglerBrandString();
+        final IEaglerLoginConnection loginConn = (IEaglerLoginConnection) conn;
+        this.brand = loginConn.getEaglerBrandString();
+        this.rewind = loginConn.isEaglerXRewindPlayer();
+        this.pvn = this.rewind ? loginConn.getRewindProtocolVersion() : loginConn.getMinecraftProtocol();
       } else {
         this.brand = OriginBlacklist.UNKNOWN_STR;
+        this.rewind = false;
+        this.pvn = pvn;
       }
     } else {
       this.origin = OriginBlacklist.UNKNOWN_STR;
       this.addr = formatIPAddress(addr);
       this.brand = brand;
+      this.rewind = false;
+      this.pvn = pvn;
     }
   }
 
   public OPlayer(final IEaglerConnection conn, final String name, final UUID uuid) {
-    this(conn, name, uuid, null, null);
+    this(conn, name, uuid, null, null, -1);
   }
 
   public final String getOrigin() {
@@ -58,6 +67,14 @@ public final class OPlayer {
 
   public final String getBrand() {
     return this.brand;
+  }
+
+  public final boolean isRewind() {
+    return this.rewind;
+  }
+
+  public final int getPVN() {
+    return this.pvn;
   }
 
   private static final String formatIPAddress(String addr) {

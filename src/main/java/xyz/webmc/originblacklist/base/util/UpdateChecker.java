@@ -22,8 +22,9 @@ public class UpdateChecker {
       conn.setRequestMethod("GET");
       conn.setConnectTimeout(5000);
       conn.setReadTimeout(5000);
+      conn.connect();
       final BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-     Json5Element element = json5.parse(reader);
+      Json5Element element = json5.parse(reader);
       if (element instanceof Json5Array) {
         final Json5Array arr = element.getAsJson5Array();
         if (arr.size() > 0) {
@@ -38,6 +39,7 @@ public class UpdateChecker {
           }
         }
       }
+      conn.disconnect();
       return false;
     } catch (final Throwable t) {
       t.printStackTrace();
