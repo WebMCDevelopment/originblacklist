@@ -289,7 +289,7 @@ public final class OriginBlacklist {
       this.updateAvailable = UpdateChecker.checkForUpdate(PLUGIN_REPO, this.plugin.getPluginVersion(),
           this.config.get("update_checker.allow_snapshots").getAsBoolean());
       if (this.updateAvailable) {
-        this.plugin.log(EnumLogLevel.INFO, "Update Available! Download at https://github.com/" + PLUGIN_REPO + ".git");
+        this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at https://github.com/" + PLUGIN_REPO + ".git");
       }
     });
   }

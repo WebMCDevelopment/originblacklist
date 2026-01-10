@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import org.semver4j.Semver;
+import org.semver4j.Semver.VersionDiff;
 
 import de.marhali.json5.Json5;
 import de.marhali.json5.Json5Array;
@@ -33,7 +34,7 @@ public class UpdateChecker {
             final Json5Object obj = element.getAsJson5Object();
             final String tag = obj.get("tag_name").getAsString();
             final Semver ver = new Semver(tag.substring(1));
-            if (ver.isGreaterThan(currentVersion)) {
+            if (ver.isGreaterThan(currentVersion) && (allowPreRelease || currentVersion.diff(ver) != VersionDiff.BUILD)) {
               return true;
             }
           }
