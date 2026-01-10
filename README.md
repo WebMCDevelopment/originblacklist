@@ -9,6 +9,7 @@
 - [x] Client brand based blacklisting
 - [x] Username based blacklisting
 - [x] IP based blacklisting
+- [x] Json5 based configuration
 - [x] Kick message customization
 - [x] Blacklist MOTD customization
 - [x] MiniMessage and legacy formattings supported
@@ -18,7 +19,7 @@
 - [ ] Reverse blacklist (whitelist)
 
 <h2>Download</h2>
-The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3">https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3</a></b>
+The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/latest/">https://github.com/WebMCDevelopment/originblacklist/releases/latest/</a></b>
 
 <h2>Building</h2>
 
