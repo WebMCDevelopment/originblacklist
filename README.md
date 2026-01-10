@@ -21,6 +21,7 @@
 The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3">https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3</a></b>
 
 <h2>Building</h2>
+
 ```sh
 $ git clone https://github.com/WebMCDevelopment/originblacklist
 $ cd originblacklist
