@@ -19,20 +19,17 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.semver4j.Semver;
-
 import de.marhali.json5.Json5Array;
 import de.marhali.json5.Json5Element;
-
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddressString;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.lax1dude.eaglercraft.backend.server.api.EnumWebSocketHeader;
 import net.lax1dude.eaglercraft.backend.server.api.IEaglerLoginConnection;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
+import org.semver4j.Semver;
 
 public final class OriginBlacklist {
   public static final Semver REQUIRED_API_VER = new Semver("1.0.2");

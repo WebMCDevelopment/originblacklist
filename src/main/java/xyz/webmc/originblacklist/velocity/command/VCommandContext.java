@@ -3,7 +3,6 @@ package xyz.webmc.originblacklist.velocity.command;
 import xyz.webmc.originblacklist.base.command.CommandContext;
 
 import com.velocitypowered.api.command.SimpleCommand.Invocation;
-
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class VCommandContext implements CommandContext {

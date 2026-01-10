@@ -6,9 +6,8 @@ import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
 
 import java.util.concurrent.TimeUnit;
 
-import org.semver4j.Semver;
-
 import net.kyori.adventure.text.Component;
+import org.semver4j.Semver;
 
 public interface IOriginBlacklistPlugin {
   public String getPluginId();

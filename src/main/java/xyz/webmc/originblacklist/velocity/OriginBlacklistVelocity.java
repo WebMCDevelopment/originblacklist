@@ -15,12 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.bstats.charts.AdvancedPie;
-import org.bstats.velocity.Metrics;
-import org.bstats.velocity.Metrics.Factory;
-import org.semver4j.Semver;
-import org.slf4j.Logger;
-
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
@@ -34,12 +28,16 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.api.util.Favicon;
-
 import net.kyori.adventure.text.Component;
 import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftLoginEvent;
+import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.velocity.Metrics;
+import org.bstats.velocity.Metrics.Factory;
+import org.semver4j.Semver;
+import org.slf4j.Logger;
 
 @SuppressWarnings({ "deprecation", "unchecked" })
 public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {

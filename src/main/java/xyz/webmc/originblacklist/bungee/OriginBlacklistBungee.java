@@ -14,10 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.bstats.bungeecord.Metrics;
-import org.bstats.charts.AdvancedPie;
-import org.semver4j.Semver;
-
 import net.kyori.adventure.text.Component;
 import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.bungee.EaglerXServerAPI;
@@ -26,13 +22,16 @@ import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftMOTDE
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.PreLoginEvent;
+import net.md_5.bungee.api.event.ProxyPingEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
+import org.bstats.bungeecord.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.semver4j.Semver;
 
 @SuppressWarnings({ "deprecation" })
 public final class OriginBlacklistBungee extends Plugin implements Listener, IOriginBlacklistPlugin {

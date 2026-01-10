@@ -5,13 +5,12 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import org.semver4j.Semver;
-import org.semver4j.Semver.VersionDiff;
-
 import de.marhali.json5.Json5;
 import de.marhali.json5.Json5Array;
 import de.marhali.json5.Json5Element;
 import de.marhali.json5.Json5Object;
+import org.semver4j.Semver;
+import org.semver4j.Semver.VersionDiff;
 
 public class UpdateChecker {
   private static final Json5 json5 = Json5.builder(builder -> builder.build());

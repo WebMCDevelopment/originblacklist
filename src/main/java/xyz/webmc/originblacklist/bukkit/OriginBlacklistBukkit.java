@@ -5,9 +5,9 @@ import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
-import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.IncompatibleDependencyException;
+import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.bukkit.command.OriginBlacklistCommandBukkit;
 
 import java.awt.image.BufferedImage;
@@ -18,7 +18,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.semver4j.Semver;
+import net.kyori.adventure.text.Component;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
+import net.lax1dude.eaglercraft.backend.server.api.bukkit.EaglerXServerAPI;
+import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftLoginEvent;
+import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftMOTDEvent;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
@@ -32,12 +36,7 @@ import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.CachedServerIcon;
-
-import net.kyori.adventure.text.Component;
-import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.bukkit.EaglerXServerAPI;
-import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftLoginEvent;
-import net.lax1dude.eaglercraft.backend.server.api.bukkit.event.EaglercraftMOTDEvent;
+import org.semver4j.Semver;
 
 public final class OriginBlacklistBukkit extends JavaPlugin implements Listener, IOriginBlacklistPlugin {
   private boolean papiPlaceholdersEnabled;
