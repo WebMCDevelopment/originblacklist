@@ -50,6 +50,15 @@ jobs:
             echo "EXISTS=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - id: mrck
+        run: |
+          echo "TOKEN=$([ -n "${{ secrets.MODRINTH_TOKEN }}" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - id: dist
+        run: |
+          echo "TAG_NAME=${{ format('v{0}{1}', steps.vars.outputs.VERS, steps.ghck.outputs.EXISTS == 'true' && format('+{0}', steps.vars.outputs.COMMIT_HASH) || '') }}" >> "$GITHUB_OUTPUT"
+          echo "REL_NAME=${{ format('{0}{1}', steps.ghck.outputs.EXISTS == 'true' && 'Snapshot ' || 'v', steps.ghck.outputs.EXISTS == 'true' && steps.vars.outputs.COMMIT_HASH || steps.vars.outputs.VERS) }}" >> "$GITHUB_OUTPUT"
+
       - run: |
           mkdir -p dist
           cp "./build/libs/${{ steps.vars.outputs.AFCT }}" ./dist
@@ -62,9 +71,27 @@ jobs:
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ format('v{0}{1}', steps.vars.outputs.VERS, steps.ghck.outputs.EXISTS == 'true' && format('+{0}', steps.vars.outputs.COMMIT_HASH) || '') }}
-          name: ${{ format('{0}{1}', steps.ghck.outputs.EXISTS == 'true' && 'Snapshot ' || 'v', steps.ghck.outputs.EXISTS == 'true' && steps.vars.outputs.COMMIT_HASH || steps.vars.outputs.VERS) }}
+          tag_name: ${{ steps.dist.outputs.TAG_NAME }}
+          name: ${{ steps.dist.outputs.REL_NAME }}
           files: dist/${{ steps.vars.outputs.AFCT }}
           prerelease: ${{ steps.ghck.outputs.EXISTS == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.mrck.outputs.TOKEN == 'true'
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: WfBtRGYI
+          version: ${{ steps.dist.output.TAG_NAME }}
+          loaders: '["bukkit", "bungeecord", "paper", "purpur", "spigot", "velocity", "waterfall"]'
+          game-versions: '["1.8.x", "1.9.x", "1.10.x", "1.11.x", "1.12.x", "1.13.x", "1.14.x", "1.15.x", "1.16.x", "1.17.x", "1.18.x", "1.19.x", "1.20.x", "1.21.x"]'
+          files: dist/${{ steps.vars.outputs.AFCT }}
+          primary-file: ${{ steps.vars.outputs.AFCT }}
+          name: ${{ steps.dist.outputs.REL_NAME }}
+          channel: ${{ steps.ghck.outputs.EXISTS == 'true' && 'beta ' || 'release' }}
+          dependencies: |-
+            [{
+              "project_id": "Gtsn3SWv",
+              "dependency_type": "required"
+            }]

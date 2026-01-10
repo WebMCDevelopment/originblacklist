@@ -217,7 +217,7 @@ public final class OriginBlacklist {
                 "fields": [],
                 "footer": {
                   "text": "OriginBlacklist v%s",
-                  "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/icon.png"
+                  "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/img/icon.png"
                 }
               }
             ],

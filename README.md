@@ -9,6 +9,7 @@
 - [x] Client brand based blacklisting
 - [x] Username based blacklisting
 - [x] IP based blacklisting
+- [x] Modular multi-platform support
 - [x] JSON5 based configuration
 - [x] Kick message customization
 - [x] Blacklist MOTD customization
