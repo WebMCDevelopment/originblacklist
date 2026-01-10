@@ -1,9 +1,12 @@
-name: OriginBlacklist
-version: ${version}
-main: dev.colbster937.originblacklist.bukkit.OriginBlacklistBukkit
-description: ${description}
-author: Colbster937
-depend:
-  - EaglercraftXServer
+name: ${plugin_name}
+version: ${plugin_vers}
+main: xyz.webmc.${plugin_iden}.bukkit.${plugin_name}Bukkit
+description: ${plugin_desc}
+website: ${plugin_site}
+authors: [${plugin_athr}]
+contributors: [${plugin_ctbr}]
+depend: [${plugin_depa}]
+provides: [${plugin_prov}]
+softdepend: [${plugin_sdpa}]
 commands:
   originblacklist:

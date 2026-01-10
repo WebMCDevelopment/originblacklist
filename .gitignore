@@ -1,9 +1,7 @@
-**/.DS_Store
-.idea
-.gradle
-gradle
-build
-run
-bin
-gradlew
-gradlew.bat
+/.gradle/
+/.vscode/
+/gradle/
+/build/
+/run/
+/gradlew
+/gradlew.bat

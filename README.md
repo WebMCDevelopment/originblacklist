@@ -1,31 +1,28 @@
-# OriginBlacklist
+<div align="center">
+  <h1>OriginBlacklist<br><img src="https://github.com/WebMCDevelopment/originblacklist/actions/workflows/gradle.yml/badge.svg"></h1>
+  <b><a>An eaglercraft client blacklisting plugin</a></b>
+</div>
 
-basically just a reimplementation of originblacklist but for eaglerxserver
+<h2>Features</h2>
 
-> [!WARNING]
-> **Velocity is the main platform I'm developing this for, bungee & bukkit will still work but will probably have some bugs and will receive less support!**
+- [x] Origin based blacklisting
+- [x] Client brand based blacklisting
+- [x] Username based blacklisting
+- [x] IP based blacklisting
+- [x] Kick message customization
+- [x] Blacklist MOTD customization
+- [x] MiniMessage and legacy formattings supported
+- [x] Plugin update checker
+- [ ] Send blacklist logs to a webhook
+- [ ] Subscribe to an auto-updating blacklist
+- [ ] Reverse blacklist (whitelist)
 
-### Features
-- [x] Origin Blacklisting
-- [x] Brand Blacklisting
-- [x] Username blacklisting
-- [x] IP blacklisting
-- [x] Custom kick message
-- [x] Custom blacklist MOTD
-- [x] MiniMessage formatting for messages
-- [x] Velocity, Bungee, and Bukkit support
-- [x] Send blacklists to a discord webhook
-- [x] Simple blacklist command
-- [ ] Blacklist subscription URLs
-- [ ] Blacklist -> Whitelist
-- [ ] Update system
+<h2>Download</h2>
+The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3">https://github.com/WebMCDevelopment/originblacklist/releases/tag/v1.1.3</a></b>
 
-### Download
-**[https://github.com/colbster937/originblacklist/releases/latest/](https://github.com/colbster937/originblacklist/releases/latest/)**
-
-### Building
-```
-$ git clone https://github.com/colbster937/originblacklist.git
+<h2>Building</h2>
+```sh
+$ git clone https://github.com/WebMCDevelopment/originblacklist
 $ cd originblacklist
 $ gradle wrapper
 $ ./gradlew shadowJar
