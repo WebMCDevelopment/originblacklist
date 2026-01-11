@@ -78,25 +78,42 @@ public final class OPlayer {
   }
 
   private static final String formatIPAddress(String addr) {
-    if (addr.startsWith("/")) {
-      addr = addr.substring(1);
-    }
+    if (addr == null) {
+      addr = OriginBlacklist.UNKNOWN_STR;
+    } else {
+      if (addr.startsWith("/")) {
+        addr = addr.substring(1);
+      }
 
-    int i = addr.lastIndexOf('/');
-    if (i != -1) {
-      addr = addr.substring(i + 1);
-    }
+      int i = addr.lastIndexOf('/');
+      if (i != -1) {
+        addr = addr.substring(i + 1);
+      }
 
-    if (addr.startsWith("[")) {
-      i = addr.indexOf(']');
-      if (i != -1)
-        return addr.substring(1, i);
-      return addr.substring(1);
-    }
+      if (addr.startsWith("[")) {
+        i = addr.indexOf(']');
+        if (i != -1) {
+          addr = addr.substring(1, i);
+        } else {
+          addr = addr.substring(1);
+        }
+      } else {
+        i = addr.lastIndexOf(':');
+        if (i != -1) {
+          String a = addr.substring(0, i);
+          String p = addr.substring(i + 1);
 
-    i = addr.lastIndexOf(':');
-    if (i != -1) {
-      addr = addr.substring(0, i);
+          boolean port = !p.isEmpty();
+          for (int j = 0; j < p.length() && port; j++) {
+            char c = p.charAt(j);
+            port = (c >= '0' && c <= '9');
+          }
+
+          if (port && a.indexOf('.') != -1) {
+            addr = a;
+          }
+        }
+      }
     }
 
     return addr;
