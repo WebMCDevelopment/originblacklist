@@ -216,6 +216,7 @@ public final class OriginBlacklistConfig {
     final Json5Object dobj = new Json5Object();
     addJSONObj(dobj, "enabled", Json5Primitive.fromBoolean(false), null);
     addJSONObj(dobj, "webhook_urls", new Json5Array(), null);
+    addJSONObj(dobj, "send_ips", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "discord", dobj, null);
     final Json5Object uobj = new Json5Object();
     addJSONObj(uobj, "enabled", Json5Primitive.fromBoolean(true), null);

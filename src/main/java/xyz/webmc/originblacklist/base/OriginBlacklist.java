@@ -240,7 +240,7 @@ public final class OriginBlacklist {
         player.getName().replaceAll("_", "\\_"),
         player.getOrigin(),
         player.getBrand(),
-        player.getAddr(),
+        this.config.get("discord.send_ips").getAsBoolean() ? player.getAddr() : "*\\*CENSORED\\**",
         player.getPVN(),
         userAgent,
         player.isRewind() ? "YES" : "NO",
