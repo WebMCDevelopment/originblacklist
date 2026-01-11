@@ -38,6 +38,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.CachedServerIcon;
 import org.semver4j.Semver;
 
+@SuppressWarnings({ "rawtypes" })
 public final class OriginBlacklistBukkit extends JavaPlugin implements Listener, IOriginBlacklistPlugin {
   private boolean papiPlaceholdersEnabled;
   private Object papi;

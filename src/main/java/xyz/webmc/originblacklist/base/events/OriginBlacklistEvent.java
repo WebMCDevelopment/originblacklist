@@ -5,6 +5,7 @@ import xyz.webmc.originblacklist.base.util.OPlayer;
 
 import net.lax1dude.eaglercraft.backend.server.api.event.IBaseServerEvent;
 
+@SuppressWarnings({ "rawtypes" })
 public abstract class OriginBlacklistEvent {
   private final EnumConnectionType connectionType;
   private final IBaseServerEvent eaglerEvent;

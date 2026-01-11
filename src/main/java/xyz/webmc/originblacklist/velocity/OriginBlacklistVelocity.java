@@ -39,7 +39,7 @@ import org.bstats.velocity.Metrics.Factory;
 import org.semver4j.Semver;
 import org.slf4j.Logger;
 
-@SuppressWarnings({ "deprecation", "unchecked" })
+@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
 public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   private final PluginContainer plugin;
   private final Factory metricsFactory;

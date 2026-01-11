@@ -109,10 +109,28 @@ public final class OPlayer {
             port = (c >= '0' && c <= '9');
           }
 
-          if (port && a.indexOf('.') != -1) {
-            addr = a;
+          if (port) {
+            if (a.indexOf('.') != -1) {
+              addr = a;
+            }
           }
         }
+      }
+
+      int c = 0;
+      boolean hex = true;
+      for (int j = 0; j < addr.length(); j++) {
+        char ch = addr.charAt(j);
+        if (ch == ':') {
+          c++;
+        } else if (!((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F'))) {
+          hex = false;
+          break;
+        }
+      }
+
+      if (hex && c == 6 && addr.indexOf("::") == -1) {
+        addr = addr + "::";
       }
     }
 

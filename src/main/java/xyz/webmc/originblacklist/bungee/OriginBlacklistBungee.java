@@ -33,7 +33,7 @@ import org.bstats.bungeecord.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.semver4j.Semver;
 
-@SuppressWarnings({ "deprecation" })
+@SuppressWarnings({ "deprecation", "rawtypes" })
 public final class OriginBlacklistBungee extends Plugin implements Listener, IOriginBlacklistPlugin {
   private ProxyServer proxy;
   private boolean papiPlaceholdersEnabled;
