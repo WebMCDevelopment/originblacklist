@@ -2,6 +2,7 @@
 /.vscode/
 /gradle/
 /build/
+/bin/
 /run/
 /gradlew
 /gradlew.bat
