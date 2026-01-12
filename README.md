@@ -9,8 +9,6 @@
 - [x] Client brand based blacklisting
 - [x] Username based blacklisting
 - [x] IP based blacklisting
-- [x] Modular multi-platform support
-- [x] JSON5 based configuration
 - [x] Kick message customization
 - [x] Blacklist MOTD customization
 - [x] MiniMessage and legacy formattings supported
@@ -19,6 +17,11 @@
 - [ ] Ingame blacklist management command
 - [ ] Subscribe to an auto-updating blacklist
 - [ ] Reverse blacklist (whitelist)
+
+<h2>Changes from v1</h2>
+
+- [x] Modular multi-platform support
+- [x] JSON5 based configuration
 
 <h2>Download</h2>
 The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/latest/">https://github.com/WebMCDevelopment/originblacklist/releases/latest/</a></b>
