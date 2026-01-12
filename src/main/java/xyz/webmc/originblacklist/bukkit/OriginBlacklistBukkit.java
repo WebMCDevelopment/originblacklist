@@ -12,6 +12,8 @@ import xyz.webmc.originblacklist.bukkit.command.OriginBlacklistCommandBukkit;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -128,6 +130,11 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   }
 
   @Override
+  public final Path getPluginJarPath() {
+    return Paths.get(this.getFile().getAbsolutePath());
+  }
+
+  @Override
   public final void log(final EnumLogLevel level, final String txt) {
     if (level == EnumLogLevel.WARN) {
       this.getLogger().warning(txt);
@@ -224,7 +231,7 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   public final void scheduleRepeat(final Runnable task, final int period, final TimeUnit unit) {
     long ms = unit.toMillis((long) period);
     long ticks = Math.max(1L, ms / 50L);
-    Bukkit.getScheduler().runTaskTimer(this, task, ticks, ticks);
+    Bukkit.getScheduler().runTaskTimer(this, task, 0, ticks);
   }
 
   @Override

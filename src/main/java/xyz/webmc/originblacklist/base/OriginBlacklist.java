@@ -10,9 +10,13 @@ import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.base.util.UpdateChecker;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -40,12 +44,11 @@ public final class OriginBlacklist {
 
   private final IOriginBlacklistPlugin plugin;
   private final OriginBlacklistConfig config;
-  private boolean updateAvailable;
+  private String updateURL;
 
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(plugin);
-    this.checkForUpdate();
     plugin.scheduleRepeat(() -> {
       this.checkForUpdate();
     }, 60, TimeUnit.MINUTES);
@@ -282,13 +285,48 @@ public final class OriginBlacklist {
   }
 
   private final void checkForUpdate() {
-    CompletableFuture.runAsync(() -> {
-      this.updateAvailable = UpdateChecker.checkForUpdate(PLUGIN_REPO, this.plugin.getPluginVersion(),
-          this.config.get("update_checker.allow_snapshots").getAsBoolean());
-      if (this.updateAvailable) {
-        this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at https://github.com/" + PLUGIN_REPO + ".git");
-      }
-    });
+    if (this.config.get("update_checker.enabled").getAsBoolean()) {
+      CompletableFuture.runAsync(() -> {
+        this.updateURL = UpdateChecker.checkForUpdate(PLUGIN_REPO, this.plugin.getPluginVersion(),
+            this.config.get("update_checker.allow_snapshots").getAsBoolean());
+        if (isNonNull((this.updateURL))) {
+          if (!this.config.get("update_checker.auto_update").getAsBoolean()) {
+            this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at " + this.updateURL);
+          } else {
+            final Path jar = this.plugin.getPluginJarPath();
+            final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
+            final Path tmp = jar.resolveSibling(jar.getFileName().toString() + ".tmp");
+            try {
+              Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
+            } catch (final Throwable t) {
+              t.printStackTrace();
+            }
+            try {
+              final URL url = new URL(this.updateURL);
+              final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+              conn.setRequestMethod("GET");
+              conn.setConnectTimeout(15000);
+              conn.setReadTimeout(15000);
+              conn.connect();
+              try (final InputStream in = conn.getInputStream()) {
+                Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
+              } finally {
+                conn.disconnect();
+              }
+              Files.move(tmp, jar, StandardCopyOption.REPLACE_EXISTING);
+              Files.delete(bak);
+            } catch (final Throwable t) {
+              t.printStackTrace();
+              try {
+                Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
+              } catch (final Throwable _t) {
+                _t.printStackTrace();
+              }
+            }
+          }
+        }
+      });
+    }
   }
 
   public static final String getComponentString(final Component comp) {

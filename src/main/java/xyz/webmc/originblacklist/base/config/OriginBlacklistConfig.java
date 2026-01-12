@@ -221,7 +221,7 @@ public final class OriginBlacklistConfig {
     final Json5Object uobj = new Json5Object();
     addJSONObj(uobj, "enabled", Json5Primitive.fromBoolean(true), null);
     addJSONObj(uobj, "allow_snapshots", Json5Primitive.fromBoolean(false), null);
-    addJSONObj(uobj, "auto_update", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(uobj, "auto_update", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "update_checker", uobj, null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);
     return obj;

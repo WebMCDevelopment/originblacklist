@@ -10,6 +10,8 @@ import xyz.webmc.originblacklist.base.util.IncompatibleDependencyException;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.velocity.command.OriginBlacklistCommandVelocity;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -145,6 +147,15 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   @Override
   public final Semver getPluginVersion() {
     return new Semver(this.plugin.getDescription().getVersion().get());
+  }
+
+  @Override
+  public final Path getPluginJarPath() {
+    try {
+      return Paths.get(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).toAbsolutePath();
+    } catch (Throwable t) {
+      throw new RuntimeException("Unable to determine plugin JAR path");
+    }
   }
 
   @Override

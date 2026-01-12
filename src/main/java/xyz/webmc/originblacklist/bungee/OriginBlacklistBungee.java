@@ -10,6 +10,8 @@ import xyz.webmc.originblacklist.base.util.IncompatibleDependencyException;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.bungee.command.OriginBlacklistCommandBungee;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -130,6 +132,11 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   }
 
   @Override
+  public final Path getPluginJarPath() {
+    return Paths.get(this.getFile().getAbsolutePath());
+  }
+
+  @Override
   public final void log(final EnumLogLevel level, final String txt) {
     if (level == EnumLogLevel.WARN) {
       this.getLogger().warning(txt);
@@ -188,7 +195,7 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
 
   @Override
   public final void scheduleRepeat(final Runnable task, final int period, final TimeUnit unit) {
-    this.proxy.getScheduler().schedule(this, task, period, period, unit);
+    this.proxy.getScheduler().schedule(this, task, 0, period, unit);
   }
 
   @Override
