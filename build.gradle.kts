@@ -158,7 +158,7 @@ tasks.register("printVars") {
   group = "help"
   doLast {
     println("VERS = " + PLUGIN_VERS)
-    println("AFCT = " + tasks.named("shadowJar").get().outputs.files.singleFile.name)
+    println("AFCT = " + tasks.named("shadowJar").get().outputs.files.singleFile.name.removeSuffix(".jar"))
   }
 }
 
