@@ -88,7 +88,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     this.blacklist = new OriginBlacklist(this);
     this.eaglerAPI = EaglerXServerAPI.instance();
     this.proxy.getCommandManager().register("originblacklist", new OriginBlacklistCommandVelocity(this.blacklist));
-    this.log(EnumLogLevel.INFO, "Initialized Plugin");
+    this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
       this.metrics = this.metricsFactory.make(this, OriginBlacklist.BSTATS_ID);
       this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
@@ -153,7 +153,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   public final Path getPluginJarPath() {
     try {
       return Paths.get(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).toAbsolutePath();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       throw new RuntimeException("Unable to determine plugin JAR path");
     }
   }
@@ -166,7 +166,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
       this.logger.error(txt);
     } else if (level == EnumLogLevel.DEBUG) {
       if (this.blacklist.isDebugEnabled()) {
-        this.logger.debug(txt);
+        this.logger.info(txt);
       }
     } else {
       this.logger.info(txt);

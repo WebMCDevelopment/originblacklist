@@ -5,6 +5,6 @@
   "description": "${plugin_desc}",
   "website": "${plugin_site}",
   "main": "xyz.webmc.${plugin_iden}.velocity.${plugin_name}Velocity",
-  "authors": [${plugin_athr}],
-  "dependencies": [${plugin_depc}]
+  "authors": ${plugin_athr},
+  "dependencies": ${plugin_depc}
 }

@@ -6,6 +6,7 @@ import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
+import xyz.webmc.originblacklist.base.util.BuildInfo;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.base.util.UpdateChecker;
@@ -14,8 +15,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -52,6 +56,11 @@ public final class OriginBlacklist {
     plugin.scheduleRepeat(() -> {
       this.checkForUpdate();
     }, 60, TimeUnit.MINUTES);
+  }
+
+  public final void init() {
+    this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
+    this.plugin.log(EnumLogLevel.DEBUG, "Commit " + BuildInfo.get("git_cm_hash"));
   }
 
   public final void handleLogin(final OriginBlacklistLoginEvent event) {
@@ -165,7 +174,7 @@ public final class OriginBlacklist {
             return EnumBlacklistType.ADDR;
           }
         } catch (final AddressStringException exception) {
-          exception.printStackTrace();
+          // exception.printStackTrace();
         }
       }
     }
@@ -275,7 +284,7 @@ public final class OriginBlacklist {
               }
 
               conn.disconnect();
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
               t.printStackTrace();
             }
           });
@@ -293,39 +302,46 @@ public final class OriginBlacklist {
           if (!this.config.get("update_checker.auto_update").getAsBoolean()) {
             this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at " + this.updateURL);
           } else {
-            final Path jar = this.plugin.getPluginJarPath();
-            final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
-            final Path tmp = jar.resolveSibling(jar.getFileName().toString() + ".tmp");
-            try {
-              Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
-            } catch (final Throwable t) {
-              t.printStackTrace();
-            }
-            try {
-              final URL url = new URL(this.updateURL);
-              final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-              conn.setRequestMethod("GET");
-              conn.setConnectTimeout(15000);
-              conn.setReadTimeout(15000);
-              conn.connect();
-              try (final InputStream in = conn.getInputStream()) {
-                Files.copy(in, tmp, StandardCopyOption.REPLACE_EXISTING);
-              } finally {
-                conn.disconnect();
-              }
-              Files.move(tmp, jar, StandardCopyOption.REPLACE_EXISTING);
-              Files.delete(bak);
-            } catch (final Throwable t) {
-              t.printStackTrace();
-              try {
-                Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
-              } catch (final Throwable _t) {
-                _t.printStackTrace();
-              }
-            }
+            this.updatePlugin();
           }
         }
       });
+    }
+  }
+
+  private final void updatePlugin() {
+    try {
+      final URL url = new URL(this.updateURL);
+      final Path jar = this.plugin.getPluginJarPath();
+      final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
+      final Path upd = jar.resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
+
+      try {
+        Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
+      } catch (final Throwable t) {
+        t.printStackTrace();
+      }
+      
+      try {
+        final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
+        conn.setRequestProperty("User-Agent", OriginBlacklist.getUserAgent());
+        conn.connect();
+        try (final InputStream in = conn.getInputStream()) {
+          Files.copy(in, upd, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+          conn.disconnect();
+        }
+        Files.delete(jar);
+        Files.delete(bak);
+      } catch (final Throwable t) {
+        t.printStackTrace();
+        Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
+      }
+    } catch (final Throwable t) {
+      t.printStackTrace();
     }
   }
 
@@ -339,6 +355,10 @@ public final class OriginBlacklist {
 
   public static final String getPNGBase64FromBytes(final byte[] bytes) {
     return "data:image/png;base64," + Base64.getEncoder().encodeToString(bytes);
+  }
+
+  public static final String getUserAgent() {
+    return BuildInfo.get("plugin_name") + "/" + BuildInfo.get("plugin_vers") + "+" + BuildInfo.get("git_cm_hash");
   }
 
   public static final boolean isNonNull(final String str) {

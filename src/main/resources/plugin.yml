@@ -3,10 +3,10 @@ version: ${plugin_vers}
 main: xyz.webmc.${plugin_iden}.bukkit.${plugin_name}Bukkit
 description: ${plugin_desc}
 website: ${plugin_site}
-authors: [${plugin_athr}]
-contributors: [${plugin_ctbr}]
-depend: [${plugin_depa}]
-provides: [${plugin_prov}]
-softdepend: [${plugin_sdpa}]
+authors: ${plugin_athr}
+contributors: ${plugin_ctbr}
+depend: ${plugin_depa}
+provides: ${plugin_prov}
+softdepend: ${plugin_sdpa}
 commands:
-  originblacklist:
+  ${plugin_iden}:

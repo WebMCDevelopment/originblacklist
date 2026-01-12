@@ -1,3 +1,5 @@
+import groovy.lang.Closure
+import com.palantir.gradle.gitversion.VersionDetails
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.language.jvm.tasks.ProcessResources
 import xyz.jpenilla.runpaper.task.RunServer
@@ -26,22 +28,26 @@ val PLUGIN_CTBR = emptyList<String>()
 
 
 
-val PLUGIN_DEPA_J = getJSONObj(PLUGIN_DEPA)
-val PLUGIN_DEPB_J = getJSONObj(PLUGIN_DEPB)
-val PLUGIN_DEPC_J = getJSONObjMerge(PLUGIN_DEPC, PLUGIN_SDPC)
-val PLUGIN_SDPA_J = getJSONObj(PLUGIN_SDPA)
-val PLUGIN_SDPB_J = getJSONObj(PLUGIN_SDPB)
-val PLUGIN_PROV_J = getJSONObj(PLUGIN_PROV)
-val PLUGIN_ATHR_J = getJSONObj(PLUGIN_ATHR)
-val PLUGIN_CTBR_J = getJSONObj(PLUGIN_CTBR)
+val PLUGIN_DEPA_J = getBukkitBungeeDeps(PLUGIN_DEPA)
+val PLUGIN_DEPB_J = getBukkitBungeeDeps(PLUGIN_DEPB)
+val PLUGIN_DEPC_J = getVelocityDeps(PLUGIN_DEPC, PLUGIN_SDPC)
+val PLUGIN_SDPA_J = getBukkitBungeeDeps(PLUGIN_SDPA)
+val PLUGIN_SDPB_J = getBukkitBungeeDeps(PLUGIN_SDPB)
+val PLUGIN_PROV_J = getBukkitBungeeDeps(PLUGIN_PROV)
+val PLUGIN_ATHR_J = getBukkitBungeeDeps(PLUGIN_ATHR)
+val PLUGIN_CTBR_J = getBukkitBungeeDeps(PLUGIN_CTBR)
 
 plugins {
   id("java")
   id("com.gradleup.shadow") version "9.3.0"
+  id("com.palantir.git-version") version "4.2.0"
   id("xyz.jpenilla.run-paper") version "3.0.2"
   id("xyz.jpenilla.run-waterfall") version "3.0.2"
   id("xyz.jpenilla.run-velocity") version "3.0.2"
 }
+
+@Suppress("UNCHECKED_CAST")
+val GIT_INFO = (extra["versionDetails"] as Closure<VersionDetails>)()
 
 repositories {
   mavenCentral()
@@ -85,6 +91,23 @@ java {
   toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
+val BUILD_PROPS = mapOf(
+  "plugin_name" to PLUGIN_NAME,
+  "plugin_iden" to PLUGIN_IDEN,
+  "plugin_desc" to PLUGIN_DESC,
+  "plugin_vers" to PLUGIN_VERS,
+  "plugin_site" to PLUGIN_SITE,
+  "plugin_depa" to PLUGIN_DEPA_J,
+  "plugin_depb" to PLUGIN_DEPB_J,
+  "plugin_depc" to PLUGIN_DEPC_J,
+  "plugin_sdpa" to PLUGIN_SDPA_J,
+  "plugin_sdpb" to PLUGIN_SDPB_J,
+  "plugin_prov" to PLUGIN_PROV_J,
+  "plugin_athr" to PLUGIN_ATHR_J,
+  "plugin_ctbr" to PLUGIN_CTBR_J,
+  "git_cm_hash" to GIT_INFO.gitHashFull,
+)
+
 tasks.withType<JavaCompile>().configureEach {
   options.encoding = "UTF-8"
   options.release.set(17)
@@ -93,24 +116,22 @@ tasks.withType<JavaCompile>().configureEach {
 tasks.withType<ProcessResources>() {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   outputs.upToDateWhen { false }
+  
   doFirst {
     filesMatching(listOf("plugin.yml", "bungee.yml", "velocity-plugin.json")) {
-			expand(mapOf(
-				"plugin_name" to PLUGIN_NAME,
-        "plugin_iden" to PLUGIN_IDEN,
-        "plugin_desc" to PLUGIN_DESC,
-        "plugin_vers" to PLUGIN_VERS,
-        "plugin_site" to PLUGIN_SITE,
-        "plugin_depa" to PLUGIN_DEPA_J,
-        "plugin_depb" to PLUGIN_DEPB_J,
-        "plugin_depc" to PLUGIN_DEPC_J,
-        "plugin_sdpa" to PLUGIN_SDPA_J,
-        "plugin_sdpb" to PLUGIN_SDPB_J,
-        "plugin_prov" to PLUGIN_PROV_J,
-        "plugin_athr" to PLUGIN_ATHR_J,
-        "plugin_ctbr" to PLUGIN_CTBR_J,
-			))
+			expand(BUILD_PROPS)
 		}
+  }
+
+  doLast {
+    val file = destinationDir.resolve("build.properties")
+    file.parentFile.mkdirs()
+
+    file.writeText(
+      BUILD_PROPS.entries.joinToString("\n") { (k, v) ->
+        "$k = $v"
+      }
+    )
   }
 
   inputs.files(tasks.named<JavaCompile>("compileJava").map { it.outputs.files })
@@ -162,20 +183,15 @@ tasks.register("printVars") {
   }
 }
 
-fun getJSONObj(list: List<String>): String {
-  return if (list.isNotEmpty()) {
-    list.joinToString(
-      separator = "\", \"",
-      prefix = "\"",
-      postfix = "\""
-    )
-  } else {
-    ""
-  }
+fun getBukkitBungeeDeps(list: List<String>): String {
+  return list.joinToString(
+    prefix = "[",
+    postfix = "]"
+  ) { "\"$it\"" }
 }
 
-fun getJSONObjMerge(a: List<String>, b: List<String>): String {
+fun getVelocityDeps(a: List<String>, b: List<String>): String {
   val c = a.joinToString(", ") { "{\"id\":\"$it\",\"optional\":false}" }
   val d = b.joinToString(", ") { "{\"id\":\"$it\",\"optional\":true}" }
-  return listOf(c, d).filter { it.isNotEmpty() }.joinToString(",")
+  return "[" + listOf(c, d).filter { it.isNotEmpty() }.joinToString(",") + "]"
 }

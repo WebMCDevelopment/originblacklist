@@ -76,7 +76,7 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
     this.eaglerAPI = EaglerXServerAPI.instance();
     this.getCommand("originblacklist").setExecutor(new OriginBlacklistCommandBukkit(this.blacklist));
     this.getServer().getPluginManager().registerEvents(this, this);
-    this.log(EnumLogLevel.INFO, "Initialized Plugin");
+    this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
       this.metrics = new Metrics(this, OriginBlacklist.BSTATS_ID);
       this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {

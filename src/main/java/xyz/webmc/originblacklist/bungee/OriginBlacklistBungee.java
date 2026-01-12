@@ -72,7 +72,7 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
     this.eaglerAPI = EaglerXServerAPI.instance();
     this.getProxy().getPluginManager().registerCommand(this, new OriginBlacklistCommandBungee(this, this.blacklist, "originblacklist"));
     this.getProxy().getPluginManager().registerListener(this, this);
-    this.log(EnumLogLevel.INFO, "Initialized Plugin");
+    this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
       this.metrics = new Metrics(this, OriginBlacklist.BSTATS_ID);
       this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {

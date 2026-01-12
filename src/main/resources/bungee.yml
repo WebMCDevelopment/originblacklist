@@ -3,8 +3,8 @@ version: ${plugin_vers}
 main: xyz.webmc.${plugin_iden}.bungee.${plugin_name}Bungee
 description: ${plugin_desc}
 website: ${plugin_site}
-author: [${plugin_athr}]
-contributors: [${plugin_ctbr}]
-depends: [${plugin_depb}]
-provides: [${plugin_prov}]
-softdepend: [${plugin_sdpb}]
+author: ${plugin_athr}
+contributors: ${plugin_ctbr}
+depends: ${plugin_depb}
+provides: ${plugin_prov}
+softdepend: ${plugin_sdpb}
