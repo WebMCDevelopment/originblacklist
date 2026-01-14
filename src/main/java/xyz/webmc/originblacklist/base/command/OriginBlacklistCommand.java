@@ -30,21 +30,38 @@ public class OriginBlacklistCommand implements ICommand {
           if (ctx.hasPermission("originblacklist.command.reload")) {
             ctx.reply("<aqua>Blacklist:</aqua>");
             ctx.reply("<gold>  - Origins:</gold>");
-            for (final Json5Element element : this.plugin.getConfig().get("blacklist.origins").getAsJson5Array()) {
+            for (final Json5Element element : this.plugin.getConfig().getArray("blacklist.origins")) {
               ctx.reply("<gray>    - " + element.getAsString() + "</gray>");
             }
             ctx.reply("<gold>  - Brands:</gold>");
-            for (final Json5Element element : this.plugin.getConfig().get("blacklist.brands").getAsJson5Array()) {
+            for (final Json5Element element : this.plugin.getConfig().getArray("blacklist.brands")) {
               ctx.reply("<gray>    - " + element.getAsString() + "</gray>");
             }
             ctx.reply("<gold>  - Players:</gold>");
-            for (final Json5Element element : this.plugin.getConfig().get("blacklist.player_names").getAsJson5Array()) {
+            for (final Json5Element element : this.plugin.getConfig().getArray("blacklist.player_names")) {
               ctx.reply("<gray>    - " + element.getAsString() + "</gray>");
             }
             ctx.reply("<gold>  - IPs:</gold>");
-            for (final Json5Element element : this.plugin.getConfig().get("blacklist.ip_addresses").getAsJson5Array()) {
+            for (final Json5Element element : this.plugin.getConfig().getArray("blacklist.ip_addresses")) {
               ctx.reply("<gray>    - " + element.getAsString() + "</gray>");
             }
+          } else {
+            ctx.reply(NO_PERMISSION);
+          }
+        } else if ("update".equals(command)) {
+          if (ctx.hasPermission("originblacklist.command.update")) {
+            ctx.reply("<aqua>Checking for updates...</aqua>");
+            final OriginBlacklist plugin = ctx.getPlugin();
+            plugin.checkForUpdates(() -> {
+              ctx.reply("<yellow>Updating plugin...</yellow>");
+              plugin.updatePlugin(() -> {
+                ctx.reply("<green>Successfully updated plugin.</green>");
+              }, () -> {
+                ctx.reply("<red>Failed to update plugin.</red>");
+              });
+            }, () -> {
+              ctx.reply("<green>Plugin is up to date.</green>");
+            });
           } else {
             ctx.reply(NO_PERMISSION);
           }
@@ -69,6 +86,7 @@ public class OriginBlacklistCommand implements ICommand {
   public void usage(CommandContext ctx) {
     ctx.reply("<aqua>Commands:</aqua>");
     ctx.reply("<gray>  - /originblacklist reload</gray>");
+    ctx.reply("<gray>  - /originblacklist update</gray>");
     // ctx.reply("<gray>  - /originblacklist add <brand/origin/name/ip> <value></gray>");
     // ctx.reply("<gray>  - /originblacklist remove <brand/origin/name/ip> <value></gray>");
     ctx.reply("<gray>  - /originblacklist list</gray>");

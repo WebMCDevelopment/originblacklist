@@ -199,6 +199,11 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   }
 
   @Override
+  public final void runAsync(final Runnable task) {
+    this.proxy.getScheduler().runAsync(this, task);
+  }
+
+  @Override
   public final void shutdown() {
     this.metrics.shutdown();
     this.proxy.getScheduler().cancel(this);

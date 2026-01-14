@@ -19,5 +19,6 @@ public interface IOriginBlacklistPlugin {
   public void setMOTD(final Component txt, final OriginBlacklistMOTDEvent event);
   public String parsePlaceholders(final OPlayer player, final String str);
   public void scheduleRepeat(final Runnable task, final int period, final TimeUnit unit);
+  public void runAsync(final Runnable task);
   public void shutdown();
 }

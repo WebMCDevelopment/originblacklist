@@ -6,12 +6,19 @@ import xyz.webmc.originblacklist.base.command.CommandContext;
 import org.bukkit.command.CommandSender;
 
 public class BKTCommandContext implements CommandContext {
+  private final OriginBlacklist plugin;
   private final CommandSender sender;
   private final String[] args;
 
-  public BKTCommandContext(final CommandSender sender, final String[] args) {
+  public BKTCommandContext(final OriginBlacklist plugin, final CommandSender sender, final String[] args) {
+    this.plugin = plugin;
     this.sender = sender;
     this.args = args;
+  }
+
+  @Override
+  public OriginBlacklist getPlugin() {
+    return this.plugin;
   }
 
   @Override

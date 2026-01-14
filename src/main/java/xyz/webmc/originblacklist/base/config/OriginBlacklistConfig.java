@@ -31,7 +31,7 @@ public final class OriginBlacklistConfig {
   private byte[] icon;
   private String icon64;
 
-  public OriginBlacklistConfig(IOriginBlacklistPlugin plugin) {
+  public OriginBlacklistConfig(final IOriginBlacklistPlugin plugin) {
     this.json5 = Json5.builder(builder -> builder
         .quoteless()
         .quoteSingle()
@@ -155,6 +155,26 @@ public final class OriginBlacklistConfig {
     return element;
   }
 
+  public final String getString(final String key) {
+    return this.get(key).getAsString();
+  }
+
+  public final boolean getBoolean(final String key) {
+    return this.get(key).getAsBoolean();
+  }
+
+  public final int getInteger(final String key) {
+    return this.get(key).getAsInt();
+  }
+
+  public final Json5Array getArray(final String key) {
+    return this.get(key).getAsJson5Array();
+  }
+
+  public final Json5Object getObject(final String key) {
+    return this.get(key).getAsJson5Object();
+  }
+
   public final byte[] getIconBytes() {
     return this.icon;
   }
@@ -221,9 +241,13 @@ public final class OriginBlacklistConfig {
     final Json5Object uobj = new Json5Object();
     addJSONObj(uobj, "enabled", Json5Primitive.fromBoolean(true), null);
     addJSONObj(uobj, "allow_snapshots", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(uobj, "check_timer", Json5Primitive.fromNumber(3600), null);
     addJSONObj(uobj, "auto_update", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "update_checker", uobj, null);
+    addJSONObj(obj, "blacklist_to_whitelist", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(obj, "block_undefined_origin", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(obj, "config_version", Json5Primitive.fromNumber(1), "DO NOT CHANGE");
     return obj;
   }
 

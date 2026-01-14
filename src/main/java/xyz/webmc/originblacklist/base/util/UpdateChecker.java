@@ -17,7 +17,7 @@ import org.semver4j.Semver.VersionDiff;
 public class UpdateChecker {
   private static final Json5 json5 = Json5.builder(builder -> builder.build());
 
-  public static final String checkForUpdate(final String repo, final Semver currentVersion, final boolean allowSnapshots) {
+  public static final String checkForUpdates(final String repo, final Semver currentVersion, final boolean allowSnapshots) {
     try {
       final URL url = new URL("https://api.github.com/repos/" + repo + "/releases");
       final HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -120,7 +120,8 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   @Subscribe(order = PostOrder.FIRST)
   public final void onJavaLogin(final PreLoginEvent event) {
     final OPlayer player = new OPlayer(null, event.getUsername(), event.getUniqueId(),
-        event.getConnection().getRemoteAddress().toString(), OriginBlacklist.UNKNOWN_STR, event.getConnection().getProtocolVersion().getProtocol());
+        event.getConnection().getRemoteAddress().toString(), OriginBlacklist.UNKNOWN_STR,
+        event.getConnection().getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -128,7 +129,8 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   public final void onJavaHandshake(final PlayerClientBrandEvent event) {
     final Player aPlayer = (Player) event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getUsername(), aPlayer.getUniqueId(),
-        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand(), event.getPlayer().getProtocolVersion().getProtocol());
+        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand(),
+        event.getPlayer().getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
 
@@ -222,6 +224,13 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     this.proxy.getScheduler()
         .buildTask(this, task)
         .repeat(period, unit)
+        .schedule();
+  }
+
+  @Override
+  public final void runAsync(final Runnable task) {
+    this.proxy.getScheduler()
+        .buildTask(this, task)
         .schedule();
   }
 

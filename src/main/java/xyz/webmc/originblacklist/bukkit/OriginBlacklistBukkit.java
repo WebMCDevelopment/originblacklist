@@ -235,6 +235,11 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   }
 
   @Override
+  public final void runAsync(final Runnable task) {
+    Bukkit.getScheduler().runTaskAsynchronously(this, task);
+  }
+
+  @Override
   public final void shutdown() {
     this.metrics.shutdown();
     Bukkit.getScheduler().cancelTasks(this);

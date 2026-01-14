@@ -7,12 +7,19 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class BNGCommandContext implements CommandContext {
+  private final OriginBlacklist plugin;
   private final CommandSender sender;
   private final String[] args;
 
-  public BNGCommandContext(final CommandSender sender, final String[] args) {
+  public BNGCommandContext(final OriginBlacklist plugin, final CommandSender sender, final String[] args) {
+    this.plugin = plugin;
     this.sender = sender;
     this.args = args;
+  }
+
+  @Override
+  public OriginBlacklist getPlugin() {
+    return this.plugin;
   }
 
   @Override

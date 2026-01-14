@@ -24,7 +24,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import de.marhali.json5.Json5Array;
@@ -54,8 +53,8 @@ public final class OriginBlacklist {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(plugin);
     plugin.scheduleRepeat(() -> {
-      this.checkForUpdate();
-    }, 60, TimeUnit.MINUTES);
+      this.checkForUpdates();
+    }, this.config.getInteger("update_checker.check_timer"), TimeUnit.SECONDS);
   }
 
   public final void init() {
@@ -109,11 +108,11 @@ public final class OriginBlacklist {
   }
 
   public final boolean isDebugEnabled() {
-    return this.config.get("debug").getAsBoolean();
+    return this.config.getBoolean("debug");
   }
 
   public final boolean isMetricsEnabled() {
-    return this.config.get("bStats").getAsBoolean();
+    return this.config.getBoolean("bStats");
   }
 
   public final OriginBlacklistConfig getConfig() {
@@ -135,57 +134,133 @@ public final class OriginBlacklist {
     conn.disconnect();
   }
 
+  public final void checkForUpdates(Runnable action1, Runnable action2) {
+    if (this.config.getBoolean("update_checker.enabled")) {
+      this.plugin.runAsync(() -> {
+        this.updateURL = UpdateChecker.checkForUpdates(PLUGIN_REPO, this.plugin.getPluginVersion(),
+            this.config.getBoolean("update_checker.allow_snapshots"));
+        if (isNonNull((this.updateURL))) {
+          action1.run();
+          return;
+        }
+        action2.run();
+      });
+    } else {
+      action2.run();
+    }
+  }
+
+  public final void updatePlugin(Runnable action1, Runnable action2) {
+    try {
+      final URL url = new URL(this.updateURL);
+      final Path jar = this.plugin.getPluginJarPath();
+      final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
+      final Path upd = jar.resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
+
+      try {
+        Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
+      } catch (final Throwable t) {
+        t.printStackTrace();
+      }
+      
+      try {
+        final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(15000);
+        conn.setRequestProperty("User-Agent", OriginBlacklist.getUserAgent());
+        conn.connect();
+        try (final InputStream in = conn.getInputStream()) {
+          Files.copy(in, upd, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+          conn.disconnect();
+        }
+        Files.delete(jar);
+        Files.delete(bak);
+        action1.run();
+        return;
+      } catch (final Throwable t) {
+        t.printStackTrace();
+        Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
+      }
+    } catch (final Throwable t) {
+      t.printStackTrace();
+    }
+    action2.run();
+  }
+
+  public final void updatePlugin() {
+    this.updatePlugin(() -> {}, () -> {});
+  }
+
   private final EnumBlacklistType testBlacklist(final OPlayer player) {
     final String name = player.getName();
     final String addr = player.getAddr();
     final String origin = player.getOrigin();
     final String brand = player.getBrand();
 
+    final boolean whitelist = this.config.getBoolean("blacklist_to_whitelist");
+    EnumBlacklistType type = EnumBlacklistType.NONE;
+
     if (isNonNull(origin)) {
-      for (final Json5Element element : this.config.get("blacklist.origins").getAsJson5Array()) {
+      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.ORIGIN;
+      for (final Json5Element element : this.config.getArray("blacklist.origins").getAsJson5Array()) {
         if (origin.matches(element.getAsString())) {
-          return EnumBlacklistType.ORIGIN;
+          if (whitelist) type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted()) type = EnumBlacklistType.ORIGIN;
+          break;
         }
       }
+    } else if (this.config.getBoolean("block_undefined_origin")) {
+      return whitelist ? EnumBlacklistType.NONE : EnumBlacklistType.ORIGIN;
     }
 
     if (isNonNull(brand)) {
-      for (final Json5Element element : this.config.get("blacklist.brands").getAsJson5Array()) {
+      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.BRAND;
+      for (final Json5Element element : this.config.getArray("blacklist.brands")) {
         if (brand.matches(element.getAsString())) {
-          return EnumBlacklistType.BRAND;
+          if (whitelist) type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted()) type = EnumBlacklistType.BRAND;
+          break;
         }
       }
     }
 
     if (isNonNull(name)) {
-      for (final Json5Element element : this.config.get("blacklist.player_names").getAsJson5Array()) {
+      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.NAME;
+      for (final Json5Element element : this.config.getArray("blacklist.player_names")) {
         this.plugin.log(EnumLogLevel.DEBUG, element.getAsString());
         if (name.matches(element.getAsString())) {
-          return EnumBlacklistType.NAME;
+          if (whitelist) type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted()) type = EnumBlacklistType.NAME;
+          break;
         }
       }
     }
 
     if (isNonNull(addr)) {
-      for (final Json5Element element : this.config.get("blacklist.ip_addresses").getAsJson5Array()) {
+      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.ADDR;
+      for (final Json5Element element : this.config.getArray("blacklist.ip_addresses")) {
         try {
           if ((new IPAddressString(element.getAsString()).toAddress())
               .contains((new IPAddressString(addr)).toAddress())) {
-            return EnumBlacklistType.ADDR;
+            if (whitelist) type = EnumBlacklistType.NONE;
+            else if (!type.isBlacklisted()) type = EnumBlacklistType.ADDR;
+            break;
           }
         } catch (final AddressStringException exception) {
-          // exception.printStackTrace();
+          if (this.isDebugEnabled()) exception.printStackTrace();
         }
       }
     }
 
-    return EnumBlacklistType.NONE;
+    return type;
   }
 
   private final Component getBlacklistedComponent(final String type, final String id, final String blockType,
       final String blockTypeAlt, final String notAllowed, final String notAllowedAlt, final String blockValue,
       final String action) {
-    final Json5Array arr = this.config.get("messages." + type).getAsJson5Array();
+    final Json5Array arr = this.config.getArray("messages." + type);
     final StringBuilder sb = new StringBuilder();
     for (int i = 0; i < arr.size(); i++) {
       if (i > 0)
@@ -193,7 +268,7 @@ public final class OriginBlacklist {
       sb.append(arr.get(i).getAsString());
     }
     final String str = sb.toString()
-        .replaceAll("%action%", this.config.get("messages.actions." + action).getAsString())
+        .replaceAll("%action%", this.config.getString("messages.actions." + action))
         .replaceAll("%block_type%", blockType)
         .replaceAll("%block_type%", blockType)
         .replaceAll("%not_allowed%", notAllowed)
@@ -203,8 +278,7 @@ public final class OriginBlacklist {
   }
 
   private final void sendWebhooks(final OriginBlacklistLoginEvent event, final EnumBlacklistType type) {
-    Json5Element element = this.config.get("discord.enabled");
-    if (element.getAsBoolean()) {
+    if (this.config.getBoolean("discord.enabled")) {
       final OPlayer player = event.getPlayer();
       final EnumConnectionType connType = event.getConnectionType();
       final String userAgent;
@@ -252,7 +326,7 @@ public final class OriginBlacklist {
         player.getName().replaceAll("_", "\\_"),
         player.getOrigin(),
         player.getBrand(),
-        this.config.get("discord.send_ips").getAsBoolean() ? player.getAddr() : "*\\*CENSORED\\**",
+        this.config.getBoolean("discord.send_ips") ? player.getAddr() : "*\\*CENSORED\\**",
         player.getPVN(),
         userAgent,
         player.isRewind() ? "YES" : "NO",
@@ -261,10 +335,10 @@ public final class OriginBlacklist {
         PLUGIN_REPO,
         PLUGIN_REPO
       ).getBytes();
-      element = this.config.get("discord.webhook_urls");
+      final Json5Element element = this.config.get("discord.webhook_urls");
       if (element instanceof Json5Array) {
         for (final Json5Element _element : element.getAsJson5Array()) {
-          CompletableFuture.runAsync(() -> {
+          this.plugin.runAsync(() -> {
             try {
               final URL url = new URL(_element.getAsString());
               final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -293,56 +367,14 @@ public final class OriginBlacklist {
     }
   }
 
-  private final void checkForUpdate() {
-    if (this.config.get("update_checker.enabled").getAsBoolean()) {
-      CompletableFuture.runAsync(() -> {
-        this.updateURL = UpdateChecker.checkForUpdate(PLUGIN_REPO, this.plugin.getPluginVersion(),
-            this.config.get("update_checker.allow_snapshots").getAsBoolean());
-        if (isNonNull((this.updateURL))) {
-          if (!this.config.get("update_checker.auto_update").getAsBoolean()) {
-            this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at " + this.updateURL);
-          } else {
-            this.updatePlugin();
-          }
-        }
-      });
-    }
-  }
-
-  private final void updatePlugin() {
-    try {
-      final URL url = new URL(this.updateURL);
-      final Path jar = this.plugin.getPluginJarPath();
-      final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
-      final Path upd = jar.resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
-
-      try {
-        Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
-      } catch (final Throwable t) {
-        t.printStackTrace();
+  private final void checkForUpdates() {
+    this.checkForUpdates(() -> {
+      if (!this.config.getBoolean("update_checker.auto_update")) {
+        this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at " + this.updateURL);
+      } else {
+        this.updatePlugin();
       }
-      
-      try {
-        final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setConnectTimeout(15000);
-        conn.setReadTimeout(15000);
-        conn.setRequestProperty("User-Agent", OriginBlacklist.getUserAgent());
-        conn.connect();
-        try (final InputStream in = conn.getInputStream()) {
-          Files.copy(in, upd, StandardCopyOption.REPLACE_EXISTING);
-        } finally {
-          conn.disconnect();
-        }
-        Files.delete(jar);
-        Files.delete(bak);
-      } catch (final Throwable t) {
-        t.printStackTrace();
-        Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
-      }
-    } catch (final Throwable t) {
-      t.printStackTrace();
-    }
+    }, () -> {});
   }
 
   public static final String getComponentString(final Component comp) {

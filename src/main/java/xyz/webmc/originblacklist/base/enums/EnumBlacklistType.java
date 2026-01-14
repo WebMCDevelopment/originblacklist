@@ -36,4 +36,8 @@ public enum EnumBlacklistType {
   public final String getActionString() {
     return this.act;
   }
+
+  public final boolean isBlacklisted() {
+    return this != NONE;
+  }
 }
