@@ -9,7 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
-public class OriginBlacklistCommandBukkit extends OriginBlacklistCommand implements TabExecutor {
+public final class OriginBlacklistCommandBukkit extends OriginBlacklistCommand implements TabExecutor {
   private final OriginBlacklist plugin;
 
   public OriginBlacklistCommandBukkit(OriginBlacklist plugin) {
@@ -23,7 +23,8 @@ public class OriginBlacklistCommandBukkit extends OriginBlacklistCommand impleme
   }
 
   @Override
-  public List<String> onTabComplete(final CommandSender sender, final Command command, final String label, final String[] args) {
+  public List<String> onTabComplete(final CommandSender sender, final Command command, final String label,
+      final String[] args) {
     return super.suggest(new BKTCommandContext(this.plugin, sender, args));
   }
 }

@@ -10,23 +10,24 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.TabExecutor;
 
-public class OriginBlacklistCommandBungee extends Command implements TabExecutor {
+public final class OriginBlacklistCommandBungee extends Command implements TabExecutor {
   private final OriginBlacklistCommand cmd;
   private final OriginBlacklist blacklist;
 
-  public OriginBlacklistCommandBungee(final OriginBlacklistBungee plugin, final OriginBlacklist blacklist, final String command) {
+  public OriginBlacklistCommandBungee(final OriginBlacklistBungee plugin, final OriginBlacklist blacklist,
+      final String command) {
     super(command);
     this.cmd = new OriginBlacklistCommand(blacklist);
     this.blacklist = blacklist;
   }
 
   @Override
-  public void execute(final CommandSender sender, final String[] args) {
+  public final void execute(final CommandSender sender, final String[] args) {
     this.cmd.execute(new BNGCommandContext(this.blacklist, sender, args));
   }
 
   @Override
-  public List<String> onTabComplete(final CommandSender sender, final String[] args) {
+  public final List<String> onTabComplete(final CommandSender sender, final String[] args) {
     return this.cmd.suggest(new BNGCommandContext(this.blacklist, sender, args));
   }
 }

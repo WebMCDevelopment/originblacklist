@@ -78,9 +78,7 @@ public final class OPlayer {
   }
 
   private static final String formatIPAddress(String addr) {
-    if (addr == null) {
-      addr = OriginBlacklist.UNKNOWN_STR;
-    } else {
+    if (OriginBlacklist.isNonNull(addr)) {
       if (addr.startsWith("/")) {
         addr = addr.substring(1);
       }
@@ -132,6 +130,8 @@ public final class OPlayer {
       if (hex && c == 6 && addr.indexOf("::") == -1) {
         addr = addr + "::";
       }
+    } else {
+      addr = OriginBlacklist.UNKNOWN_STR;
     }
 
     return addr;

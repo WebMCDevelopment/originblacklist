@@ -14,8 +14,8 @@
 - [x] MiniMessage and legacy formattings supported
 - [x] Plugin update checker
 - [x] Send blacklist logs to a webhook
+- [x] Ingame blacklist management command
 - [x] Reverse blacklist (whitelist)
-- [ ] Ingame blacklist management command
 - [ ] Subscribe to an auto-updating blacklist
 
 <h2>Changes from v1</h2>

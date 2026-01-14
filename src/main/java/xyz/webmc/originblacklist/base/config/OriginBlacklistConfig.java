@@ -132,7 +132,7 @@ public final class OriginBlacklistConfig {
 
     if (this.config != null && OriginBlacklist.isNonNull(key)) {
       element = this.config;
-      final String[] parts = key.split("\\.");
+      final String[] parts = splitPath(key);
 
       for (final String part : parts) {
         if (element instanceof Json5Object) {
@@ -153,6 +153,75 @@ public final class OriginBlacklistConfig {
     }
 
     return element;
+  }
+
+  public final boolean set(final String key, final Json5Element value) {
+    boolean ret = false;
+
+    if (this.config != null && value != null) {
+      final String[] parts = splitPath(key);
+
+      if (parts.length > 0) {
+        Json5Object obj = this.config;
+
+        for (int i = 0; i < parts.length - 1; i++) {
+          final String part = parts[i];
+          final Json5Element cur = obj.has(part) ? obj.get(part) : null;
+
+          if (cur instanceof Json5Object next) {
+            obj = next;
+          } else {
+            final Json5Object next = new Json5Object();
+            obj.add(part, next);
+            obj = next;
+          }
+        }
+
+        obj.add(parts[parts.length - 1], value.deepCopy());
+        this.saveConfig();
+        ret = true;
+      }
+    }
+
+    return ret;
+  }
+
+  public final boolean remove(final String key) {
+    boolean ret = false;
+
+    if (this.config != null) {
+      final String[] parts = splitPath(key);
+
+      if (parts.length > 0) {
+        Json5Object obj = this.config;
+        Json5Element element = obj;
+
+        for (int i = 0; i < parts.length - 1; i++) {
+          if (element instanceof Json5Object cur && cur.has(parts[i])) {
+            element = cur.get(parts[i]);
+            if (element instanceof Json5Object) {
+              obj = (Json5Object) element;
+            } else {
+              element = null;
+            }
+          } else {
+            element = null;
+          }
+
+          if (element == null) {
+            break;
+          }
+        }
+
+        if (element != null && obj.has(parts[parts.length - 1])) {
+          obj.remove(parts[parts.length - 1]);
+          this.saveConfig();
+          ret = true;
+        }
+      }
+    }
+
+    return ret;
   }
 
   public final String getString(final String key) {
@@ -278,5 +347,17 @@ public final class OriginBlacklistConfig {
       value.setComment(comment);
     }
     obj.add(key, value);
+  }
+
+  private static final String[] splitPath(final String key) {
+    final String[] ret;
+
+    if (OriginBlacklist.isNonNull(key)) {
+      ret = key.split("\\.");
+    } else {
+      ret = new String[0];
+    }
+
+    return ret;
   }
 }

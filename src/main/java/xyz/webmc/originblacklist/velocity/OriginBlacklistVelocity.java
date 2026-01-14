@@ -64,7 +64,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   }
 
   @Subscribe
-  public void onProxyInitialization(ProxyInitializeEvent event) {
+  public final void onProxyInitialization(ProxyInitializeEvent event) {
     this.proxy.getPluginManager().getPlugin("eaglerxserver").ifPresentOrElse(plugin -> {
       final Semver version = new Semver(plugin.getDescription().getVersion().orElse("1.0.0"));
       if (version.isLowerThan(OriginBlacklist.REQUIRED_API_VER)) {

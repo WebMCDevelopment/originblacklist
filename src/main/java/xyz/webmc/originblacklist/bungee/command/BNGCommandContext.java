@@ -6,7 +6,7 @@ import xyz.webmc.originblacklist.base.command.CommandContext;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 
-public class BNGCommandContext implements CommandContext {
+public final class BNGCommandContext implements CommandContext {
   private final OriginBlacklist plugin;
   private final CommandSender sender;
   private final String[] args;
@@ -18,27 +18,27 @@ public class BNGCommandContext implements CommandContext {
   }
 
   @Override
-  public OriginBlacklist getPlugin() {
+  public final OriginBlacklist getPlugin() {
     return this.plugin;
   }
 
   @Override
-  public String getPlayerName() {
+  public final String getPlayerName() {
     return this.sender.getName();
   }
 
   @Override
-  public void reply(final String message) {
+  public final void reply(final String message) {
     this.sender.sendMessage(TextComponent.fromLegacy(OriginBlacklist.getLegacyFromMiniMessage(message)));
   }
 
   @Override
-  public boolean hasPermission(final String permission) {
+  public final boolean hasPermission(final String permission) {
     return this.sender.hasPermission(permission);
   }
 
   @Override
-  public String[] getArgs() {
+  public final String[] getArgs() {
     return this.args;
   }
 }

@@ -14,10 +14,11 @@ import de.marhali.json5.Json5Object;
 import org.semver4j.Semver;
 import org.semver4j.Semver.VersionDiff;
 
-public class UpdateChecker {
+public final class UpdateChecker {
   private static final Json5 json5 = Json5.builder(builder -> builder.build());
 
-  public static final String checkForUpdates(final String repo, final Semver currentVersion, final boolean allowSnapshots) {
+  public static final String checkForUpdates(final String repo, final Semver currentVersion,
+      final boolean allowSnapshots) {
     try {
       final URL url = new URL("https://api.github.com/repos/" + repo + "/releases");
       final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -46,11 +47,13 @@ public class UpdateChecker {
             }
             final boolean pre = obj.get("prerelease").getAsBoolean();
             if (!pre) {
-              if (rel == null || obj.get("published_at").getAsString().compareTo(rel.get("published_at").getAsString()) > 0) {
+              if (rel == null
+                  || obj.get("published_at").getAsString().compareTo(rel.get("published_at").getAsString()) > 0) {
                 rel = obj;
               }
             } else {
-              if (snap == null || obj.get("published_at").getAsString().compareTo(snap.get("published_at").getAsString()) > 0) {
+              if (snap == null
+                  || obj.get("published_at").getAsString().compareTo(snap.get("published_at").getAsString()) > 0) {
                 snap = obj;
               }
             }
@@ -71,7 +74,8 @@ public class UpdateChecker {
           } catch (Throwable t) {
             comm = "";
           }
-          if (ver.isGreaterThan(currentVersion) || (allowSnapshots && currentVersion.diff(ver) == VersionDiff.BUILD && OriginBlacklist.isNonNull(comm) && !BuildInfo.get("git_cm_hash").startsWith(comm))) {
+          if (ver.isGreaterThan(currentVersion) || (allowSnapshots && currentVersion.diff(ver) == VersionDiff.BUILD
+              && OriginBlacklist.isNonNull(comm) && !BuildInfo.get("git_cm_hash").startsWith(comm))) {
             element = obj.get("assets");
             if (element instanceof Json5Array) {
               final Json5Array aArr = element.getAsJson5Array();

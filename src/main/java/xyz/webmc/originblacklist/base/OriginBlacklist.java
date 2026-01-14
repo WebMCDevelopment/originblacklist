@@ -193,7 +193,7 @@ public final class OriginBlacklist {
     this.updatePlugin(() -> {}, () -> {});
   }
 
-  private final EnumBlacklistType testBlacklist(final OPlayer player) {
+  public final EnumBlacklistType testBlacklist(final OPlayer player) {
     final String name = player.getName();
     final String addr = player.getAddr();
     final String origin = player.getOrigin();
@@ -229,7 +229,6 @@ public final class OriginBlacklist {
     if (isNonNull(name)) {
       if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.NAME;
       for (final Json5Element element : this.config.getArray("blacklist.player_names")) {
-        this.plugin.log(EnumLogLevel.DEBUG, element.getAsString());
         if (name.matches(element.getAsString())) {
           if (whitelist) type = EnumBlacklistType.NONE;
           else if (!type.isBlacklisted()) type = EnumBlacklistType.NAME;
@@ -335,34 +334,32 @@ public final class OriginBlacklist {
         PLUGIN_REPO,
         PLUGIN_REPO
       ).getBytes();
-      final Json5Element element = this.config.get("discord.webhook_urls");
-      if (element instanceof Json5Array) {
-        for (final Json5Element _element : element.getAsJson5Array()) {
-          this.plugin.runAsync(() -> {
-            try {
-              final URL url = new URL(_element.getAsString());
-              final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-              conn.setRequestMethod("POST");
-              conn.setRequestProperty("Content-Type", "application/json");
-              conn.setDoOutput(true);
-              conn.setConnectTimeout(5000);
-              conn.setReadTimeout(5000);
-              conn.connect();
-              final OutputStream os = conn.getOutputStream();
-              os.write(payload);
-              os.close();
+      final Json5Array arr = this.config.get("discord.webhook_urls").getAsJson5Array();
+      for (final Json5Element element : arr) {
+        this.plugin.runAsync(() -> {
+          try {
+            final URL url = new URL(element.getAsString());
+            final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.connect();
+            final OutputStream os = conn.getOutputStream();
+            os.write(payload);
+            os.close();
 
-              final int code = conn.getResponseCode();
-              if (code < 200 || code >= 300) {
-                this.plugin.log(EnumLogLevel.WARN, "Webhook failed (HTTP " + code + ")");
-              }
-
-              conn.disconnect();
-            } catch (final Throwable t) {
-              t.printStackTrace();
+            final int code = conn.getResponseCode();
+            if (code < 200 || code >= 300) {
+              this.plugin.log(EnumLogLevel.WARN, "Webhook failed (HTTP " + code + ")");
             }
-          });
-        }
+
+            conn.disconnect();
+          } catch (final Throwable t) {
+            t.printStackTrace();
+          }
+        });
       }
     }
   }
