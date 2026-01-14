@@ -71,7 +71,7 @@ public final class UpdateChecker {
           String comm;
           try {
             comm = ver.getBuild().get(0).trim();
-          } catch (Throwable t) {
+          } catch (final Throwable t) {
             comm = "";
           }
           if (ver.isGreaterThan(currentVersion) || (allowSnapshots && currentVersion.diff(ver) == VersionDiff.BUILD

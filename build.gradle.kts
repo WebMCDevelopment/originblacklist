@@ -1,4 +1,5 @@
 import groovy.lang.Closure
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.palantir.gradle.gitversion.VersionDetails
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -37,9 +38,11 @@ val PLUGIN_PROV_J = getBukkitBungeeDeps(PLUGIN_PROV)
 val PLUGIN_ATHR_J = getBukkitBungeeDeps(PLUGIN_ATHR)
 val PLUGIN_CTBR_J = getBukkitBungeeDeps(PLUGIN_CTBR)
 
+val EAGXS_VER = "1.0.8"
+
 plugins {
   id("java")
-  id("com.gradleup.shadow") version "9.3.0"
+  id("com.gradleup.shadow") version "9.3.1"
   id("com.palantir.git-version") version "4.2.0"
   id("xyz.jpenilla.run-paper") version "3.0.2"
   id("xyz.jpenilla.run-waterfall") version "3.0.2"
@@ -113,7 +116,7 @@ tasks.withType<JavaCompile>().configureEach {
   options.release.set(17)
 }
 
-tasks.withType<ProcessResources>() {
+tasks.withType<ProcessResources>().configureEach {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   outputs.upToDateWhen { false }
   
@@ -126,7 +129,6 @@ tasks.withType<ProcessResources>() {
   doLast {
     val file = destinationDir.resolve("build.properties")
     file.parentFile.mkdirs()
-
     file.writeText(
       BUILD_PROPS.entries.joinToString("\n") { (k, v) ->
         "$k = $v"
@@ -137,37 +139,15 @@ tasks.withType<ProcessResources>() {
   inputs.files(tasks.named<JavaCompile>("compileJava").map { it.outputs.files })
 }
 
-tasks.withType<RunServer>() {
-  minecraftVersion("1.12.2")
-  runDirectory.set(layout.projectDirectory.dir("run/paper"))
-  downloadPlugins {
-    github("lax1dude", "eaglerxserver", "v1.0.8", "EaglerXServer.jar")
-    modrinth("placeholderapi", "2.11.7")
+tasks.withType<Jar>().configureEach {
+  if (this !is ShadowJar) enabled = false
+}
+
+tasks.withType<ShadowJar>().configureEach {
+  doFirst {
+    delete(layout.buildDirectory.dir("libs"))
+    mkdir(layout.buildDirectory.dir("libs"))
   }
-}
-
-tasks.withType<RunWaterfall>() {
-  waterfallVersion("1.21")
-  runDirectory.set(layout.projectDirectory.dir("run/waterfall"))
-  downloadPlugins {
-    github("lax1dude", "eaglerxserver", "v1.0.8", "EaglerXServer.jar")
-  }
-}
-
-tasks.withType<RunVelocity>() {
-  velocityVersion("3.4.0-SNAPSHOT")
-  runDirectory.set(layout.projectDirectory.dir("run/velocity"))
-  downloadPlugins {
-    github("lax1dude", "eaglerxserver", "v1.0.8", "EaglerXServer.jar")
-    modrinth("miniplaceholders", "3.1.0")
-  }
-}
-
-tasks.jar {
-  archiveFileName.set("$PLUGIN_NAME-$PLUGIN_VERS.jar")
-}
-
-tasks.shadowJar {
   relocate("org.bstats", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.bstats")
   relocate("de.marhali.json5", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.json5")
   relocate("org.semver4j.semver4j", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.semver4j")
@@ -175,11 +155,41 @@ tasks.shadowJar {
   archiveFileName.set("$PLUGIN_NAME-$PLUGIN_VERS.jar")
 }
 
+tasks.named("build") {
+  dependsOn(tasks.named("shadowJar"))
+}
+
 tasks.register("printVars") {
   group = "help"
   doLast {
     println("VERS = " + PLUGIN_VERS)
     println("AFCT = " + tasks.named("shadowJar").get().outputs.files.singleFile.name.removeSuffix(".jar"))
+  }
+}
+
+tasks.withType<RunServer>().configureEach {
+  minecraftVersion("1.12.2")
+  runDirectory.set(layout.projectDirectory.dir("run/paper"))
+  downloadPlugins {
+    github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")
+    modrinth("placeholderapi", "2.11.7")
+  }
+}
+
+tasks.withType<RunWaterfall>().configureEach {
+  waterfallVersion("1.21")
+  runDirectory.set(layout.projectDirectory.dir("run/waterfall"))
+  downloadPlugins {
+    github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")
+  }
+}
+
+tasks.withType<RunVelocity>().configureEach {
+  velocityVersion("3.4.0-SNAPSHOT")
+  runDirectory.set(layout.projectDirectory.dir("run/velocity"))
+  downloadPlugins {
+    github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")
+    modrinth("miniplaceholders", "3.1.0")
   }
 }
 

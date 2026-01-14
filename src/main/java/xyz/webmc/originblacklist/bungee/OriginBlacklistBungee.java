@@ -89,6 +89,11 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
     }
   }
 
+  @Override
+  public void onDisable() {
+    this.blacklist.shutdown();
+  }
+
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onEaglerLogin(final EaglercraftLoginEvent event) {
     final OPlayer player = new OPlayer(event.getLoginConnection(), event.getProfileUsername(), event.getProfileUUID());

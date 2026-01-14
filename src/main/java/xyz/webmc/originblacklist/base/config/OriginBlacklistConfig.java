@@ -50,19 +50,19 @@ public final class OriginBlacklistConfig {
   private final void loadConfig() {
     try {
       this.reloadConfigUnsafe();
+      this.reloadIconImage();
     } catch (final IOException exception) {
       throw new RuntimeException("Failed to load config.", exception);
     }
-    this.reloadIconImage();
   }
 
   public final void reloadConfig() {
     try {
       this.reloadConfigUnsafe();
+      this.reloadIconImage();
     } catch (final IOException exception) {
       exception.printStackTrace();
     }
-    this.reloadIconImage();
   }
 
   private final void reloadConfigUnsafe() throws IOException {
@@ -95,10 +95,10 @@ public final class OriginBlacklistConfig {
       final BufferedImage img = ImageIO.read(iconFile);
 
       if (img.getWidth() == 64 && img.getHeight() == 64) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "png", baos);
         this.icon64 = OriginBlacklist.getPNGBase64FromBytes(baos.toByteArray());
-        byte[] bytes = new byte[64 * 64 * 4];
+        final byte[] bytes = new byte[64 * 64 * 4];
         for (int y = 0; y < 64; y++) {
           for (int x = 0; x < 64; x++) {
             int pixel = img.getRGB(x, y);
@@ -255,7 +255,7 @@ public final class OriginBlacklistConfig {
   private static final Json5Object getDefaultConfig() {
     final Json5Object obj = new Json5Object();
     addJSONObj(obj, "debug", Json5Primitive.fromBoolean(false), null);
-    final Json5Object mobj = new Json5Object();
+    final Json5Object mObj = new Json5Object();
     final Json5Array kick = new Json5Array();
     kick.add("<red>This %block_type% is %not_allowed_alt%!</red>");
     kick.add("<dark_gray>»</dark_gray> <gray>%blocked_value%</gray> <dark_gray>«</dark_gray>");
@@ -264,18 +264,18 @@ public final class OriginBlacklistConfig {
     kick.add("");
     kick.add("<aqua>Think this is a mistake? Join our discord:</aqua>");
     kick.add("<blue>discord.gg/changethisintheconfig</blue>");
-    addJSONObj(mobj, "kick", kick, null);
+    addJSONObj(mObj, "kick", kick, null);
     final Json5Array motd = new Json5Array();
     motd.add("<red>This %block_type% is %not_allowed%!</red>");
     motd.add("<dark_gray>»</dark_gray> <gray>%blocked_value%</gray>");
-    addJSONObj(mobj, "motd", motd, null);
+    addJSONObj(mObj, "motd", motd, null);
     final Json5Object actions = new Json5Object();
     actions.add("generic", Json5Primitive.fromString("<gold>Please switch to a different %block_type%.</gold>"));
     actions.add("player_name", Json5Primitive.fromString("<gold>Please change your %block_type%.</gold>"));
     actions.add("ip_address", Json5Primitive.fromString("<gold>Please contact staff for assistance.</gold>"));
-    addJSONObj(mobj, "actions", actions, null);
-    addJSONObj(obj, "messages", mobj, null);
-    final Json5Object bobj = new Json5Object();
+    addJSONObj(mObj, "actions", actions, null);
+    addJSONObj(obj, "messages", mObj, null);
+    final Json5Object bObj = new Json5Object();
     final Json5Array origins = new Json5Array();
     origins.add(".*eaglerhackedclients\\.vercel\\.app.*");
     origins.add(".*eaglerhacks\\.github\\.io.*");
@@ -287,32 +287,37 @@ public final class OriginBlacklistConfig {
     origins.add(".*uec\\.vercel\\.app.*");
     origins.add(".*valux-game\\.github\\.io.*");
     origins.add(".*project516\\.dev.*");
-    addJSONObj(bobj, "origins", origins, null);
+    addJSONObj(bObj, "origins", origins, null);
     final Json5Array brands = new Json5Array();
     brands.add(".*dragonx.*");
     brands.add(".*piclient.*");
     brands.add(".*justin.*");
     brands.add(".*wurstx.*");
     brands.add(".*moonlight.*");
-    addJSONObj(bobj, "brands", brands, null);
+    addJSONObj(bObj, "brands", brands, null);
     final Json5Array players = new Json5Array();
     players.add("Admin");
-    addJSONObj(bobj, "player_names", players, null);
+    addJSONObj(bObj, "player_names", players, null);
     final Json5Array ips = new Json5Array();
     ips.add("192.0.2.0/24");
-    addJSONObj(bobj, "ip_addresses", ips, null);
-    addJSONObj(obj, "blacklist", bobj, null);
-    final Json5Object dobj = new Json5Object();
-    addJSONObj(dobj, "enabled", Json5Primitive.fromBoolean(false), null);
-    addJSONObj(dobj, "webhook_urls", new Json5Array(), null);
-    addJSONObj(dobj, "send_ips", Json5Primitive.fromBoolean(true), null);
-    addJSONObj(obj, "discord", dobj, null);
-    final Json5Object uobj = new Json5Object();
-    addJSONObj(uobj, "enabled", Json5Primitive.fromBoolean(true), null);
-    addJSONObj(uobj, "allow_snapshots", Json5Primitive.fromBoolean(false), null);
-    addJSONObj(uobj, "check_timer", Json5Primitive.fromNumber(3600), null);
-    addJSONObj(uobj, "auto_update", Json5Primitive.fromBoolean(true), null);
-    addJSONObj(obj, "update_checker", uobj, null);
+    addJSONObj(bObj, "ip_addresses", ips, null);
+    addJSONObj(obj, "blacklist", bObj, null);
+    final Json5Object dObj = new Json5Object();
+    addJSONObj(dObj, "enabled", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(dObj, "webhook_urls", new Json5Array(), null);
+    addJSONObj(dObj, "send_ips", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(obj, "discord", dObj, null);
+    final Json5Object uObj = new Json5Object();
+    addJSONObj(uObj, "enabled", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(uObj, "allow_snapshots", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(uObj, "check_timer", Json5Primitive.fromNumber(3600), null);
+    addJSONObj(uObj, "auto_update", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(obj, "update_checker", uObj, null);
+    final Json5Object hObj = new Json5Object();
+    addJSONObj(hObj, "enabled", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(hObj, "http_port", Json5Primitive.fromNumber(8080), null);
+    addJSONObj(hObj, "listen_addr", Json5Primitive.fromString("0.0.0.0"), null);
+    addJSONObj(obj, "blacklist_http_share", hObj, null);
     addJSONObj(obj, "blacklist_to_whitelist", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "block_undefined_origin", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);

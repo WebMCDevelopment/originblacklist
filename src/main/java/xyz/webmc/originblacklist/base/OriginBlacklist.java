@@ -6,6 +6,7 @@ import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
+import xyz.webmc.originblacklist.base.http.OriginBlacklistHTTPServer;
 import xyz.webmc.originblacklist.base.util.BuildInfo;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
@@ -26,8 +27,10 @@ import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import de.marhali.json5.Json5;
 import de.marhali.json5.Json5Array;
 import de.marhali.json5.Json5Element;
+import de.marhali.json5.Json5Object;
 import inet.ipaddr.AddressStringException;
 import inet.ipaddr.IPAddressString;
 import net.kyori.adventure.text.Component;
@@ -47,11 +50,15 @@ public final class OriginBlacklist {
 
   private final IOriginBlacklistPlugin plugin;
   private final OriginBlacklistConfig config;
+  private final OriginBlacklistHTTPServer http;
+  private final Json5 json5;
   private String updateURL;
 
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(plugin);
+    this.http = new OriginBlacklistHTTPServer(this);
+    this.json5 = Json5.builder(builder -> builder.prettyPrinting().indentFactor(0).build());
     plugin.scheduleRepeat(() -> {
       this.checkForUpdates();
     }, this.config.getInteger("update_checker.check_timer"), TimeUnit.SECONDS);
@@ -60,6 +67,22 @@ public final class OriginBlacklist {
   public final void init() {
     this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
     this.plugin.log(EnumLogLevel.DEBUG, "Commit " + BuildInfo.get("git_cm_hash"));
+    if (this.isHTTPServerEnabled()) {
+      this.http.start();
+    }
+  }
+
+  public final void shutdown() {
+    this.plugin.log(EnumLogLevel.INFO, "Shutting down...");
+    this.http.stop();
+  }
+
+  public final void handleReload() {
+    if (this.isHTTPServerEnabled()) {
+      this.http.start();
+    } else {
+      this.http.stop();
+    }
   }
 
   public final void handleLogin(final OriginBlacklistLoginEvent event) {
@@ -115,6 +138,10 @@ public final class OriginBlacklist {
     return this.config.getBoolean("bStats");
   }
 
+  public final boolean isHTTPServerEnabled() {
+    return this.config.getBoolean("blacklist_http_share.enabled");
+  }
+
   public final OriginBlacklistConfig getConfig() {
     return this.config;
   }
@@ -155,14 +182,15 @@ public final class OriginBlacklist {
       final URL url = new URL(this.updateURL);
       final Path jar = this.plugin.getPluginJarPath();
       final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
-      final Path upd = jar.resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
+      final Path upd = jar
+          .resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
 
       try {
         Files.copy(jar, bak, StandardCopyOption.REPLACE_EXISTING);
       } catch (final Throwable t) {
         t.printStackTrace();
       }
-      
+
       try {
         final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -190,7 +218,9 @@ public final class OriginBlacklist {
   }
 
   public final void updatePlugin() {
-    this.updatePlugin(() -> {}, () -> {});
+    this.updatePlugin(() -> {
+    }, () -> {
+    });
   }
 
   public final EnumBlacklistType testBlacklist(final OPlayer player) {
@@ -203,11 +233,14 @@ public final class OriginBlacklist {
     EnumBlacklistType type = EnumBlacklistType.NONE;
 
     if (isNonNull(origin)) {
-      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.ORIGIN;
+      if (whitelist && !type.isBlacklisted())
+        type = EnumBlacklistType.ORIGIN;
       for (final Json5Element element : this.config.getArray("blacklist.origins").getAsJson5Array()) {
         if (origin.matches(element.getAsString())) {
-          if (whitelist) type = EnumBlacklistType.NONE;
-          else if (!type.isBlacklisted()) type = EnumBlacklistType.ORIGIN;
+          if (whitelist)
+            type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted())
+            type = EnumBlacklistType.ORIGIN;
           break;
         }
       }
@@ -216,44 +249,72 @@ public final class OriginBlacklist {
     }
 
     if (isNonNull(brand)) {
-      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.BRAND;
+      if (whitelist && !type.isBlacklisted())
+        type = EnumBlacklistType.BRAND;
       for (final Json5Element element : this.config.getArray("blacklist.brands")) {
         if (brand.matches(element.getAsString())) {
-          if (whitelist) type = EnumBlacklistType.NONE;
-          else if (!type.isBlacklisted()) type = EnumBlacklistType.BRAND;
+          if (whitelist)
+            type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted())
+            type = EnumBlacklistType.BRAND;
           break;
         }
       }
     }
 
     if (isNonNull(name)) {
-      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.NAME;
+      if (whitelist && !type.isBlacklisted())
+        type = EnumBlacklistType.NAME;
       for (final Json5Element element : this.config.getArray("blacklist.player_names")) {
         if (name.matches(element.getAsString())) {
-          if (whitelist) type = EnumBlacklistType.NONE;
-          else if (!type.isBlacklisted()) type = EnumBlacklistType.NAME;
+          if (whitelist)
+            type = EnumBlacklistType.NONE;
+          else if (!type.isBlacklisted())
+            type = EnumBlacklistType.NAME;
           break;
         }
       }
     }
 
     if (isNonNull(addr)) {
-      if (whitelist && !type.isBlacklisted()) type = EnumBlacklistType.ADDR;
+      if (whitelist && !type.isBlacklisted())
+        type = EnumBlacklistType.ADDR;
       for (final Json5Element element : this.config.getArray("blacklist.ip_addresses")) {
         try {
           if ((new IPAddressString(element.getAsString()).toAddress())
               .contains((new IPAddressString(addr)).toAddress())) {
-            if (whitelist) type = EnumBlacklistType.NONE;
-            else if (!type.isBlacklisted()) type = EnumBlacklistType.ADDR;
+            if (whitelist)
+              type = EnumBlacklistType.NONE;
+            else if (!type.isBlacklisted())
+              type = EnumBlacklistType.ADDR;
             break;
           }
         } catch (final AddressStringException exception) {
-          if (this.isDebugEnabled()) exception.printStackTrace();
+          if (this.isDebugEnabled())
+            exception.printStackTrace();
         }
       }
     }
 
     return type;
+  }
+
+  public final String getBlacklistShare() {
+    try {
+      final Json5Object obj = new Json5Object();
+      obj.addProperty("plugin_version", this.plugin.getPluginVersion().getVersion());
+      obj.addProperty("blacklist_to_whitelist", this.config.getBoolean("blacklist_to_whitelist"));
+      obj.addProperty("block_undefined_origin", this.config.getBoolean("block_undefined_origin"));
+      final Json5Object bObj = new Json5Object();
+      final String[] types = new String[] { "origins", "brands", "player_names", "ip_addresses" };
+      for (final String type : types) {
+        bObj.add(type, this.config.getArray("blacklist." + type));
+      }
+      obj.add("blacklist", bObj);
+      return this.json5.serialize(obj);
+    } catch (final Throwable t) {
+      return null;
+    }
   }
 
   private final Component getBlacklistedComponent(final String type, final String id, final String blockType,
@@ -288,52 +349,51 @@ public final class OriginBlacklist {
         userAgent = UNKNOWN_STR;
       }
       final byte[] payload = String.format(
-        """
-          {
-            "content": "Blocked a blacklisted %s from joining",
-            "embeds": [
-              {
-                "title": "-------- Player Information --------",
-                "description": "**→ Name:** %s\\n**→ Origin:** %s\\n**→ Brand:** %s\\n**→ IP Address:** %s\\n**→ Protocol Version:** %s\\n**→ User Agent:** %s\\n**→ Rewind:** %s\\n**→ Player Type:** %s",
-                "color": 15801922,
-                "fields": [],
-                "footer": {
-                  "text": "OriginBlacklist v%s",
-                  "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/img/icon.png"
-                }
-              }
-            ],
-            "components": [
-              {
-                "type": 1,
-                "components": [
-                  {
-                    "type": 2,
-                    "style": 5,
-                    "label": "Get the Plugin",
-                    "url": "https://github.com/%s",
-                    "emoji": {
-                      "name": "🌐"
+          """
+                {
+                  "content": "Blocked a blacklisted %s from joining",
+                  "embeds": [
+                    {
+                      "title": "-------- Player Information --------",
+                      "description": "**→ Name:** %s\\n**→ Origin:** %s\\n**→ Brand:** %s\\n**→ IP Address:** %s\\n**→ Protocol Version:** %s\\n**→ User Agent:** %s\\n**→ Rewind:** %s\\n**→ Player Type:** %s",
+                      "color": 15801922,
+                      "fields": [],
+                      "footer": {
+                        "text": "OriginBlacklist v%s",
+                        "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/img/icon.png"
+                      }
                     }
-                  }
-                ]
-              }
-            ]
-          }
-        """,
-        type.getAltString(),
-        player.getName().replaceAll("_", "\\_"),
-        player.getOrigin(),
-        player.getBrand(),
-        this.config.getBoolean("discord.send_ips") ? player.getAddr() : "*\\*CENSORED\\**",
-        player.getPVN(),
-        userAgent,
-        player.isRewind() ? "YES" : "NO",
-        connType.toString(),
-        this.plugin.getPluginVersion(),
-        PLUGIN_REPO,
-        PLUGIN_REPO
-      ).getBytes();
+                  ],
+                  "components": [
+                    {
+                      "type": 1,
+                      "components": [
+                        {
+                          "type": 2,
+                          "style": 5,
+                          "label": "Get the Plugin",
+                          "url": "https://github.com/%s",
+                          "emoji": {
+                            "name": "🌐"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              """,
+          type.getAltString(),
+          player.getName().replaceAll("_", "\\_"),
+          player.getOrigin(),
+          player.getBrand(),
+          this.config.getBoolean("discord.send_ips") ? player.getAddr() : "*\\*CENSORED\\**",
+          player.getPVN(),
+          userAgent,
+          player.isRewind() ? "YES" : "NO",
+          connType.toString(),
+          this.plugin.getPluginVersion(),
+          PLUGIN_REPO,
+          PLUGIN_REPO).getBytes();
       final Json5Array arr = this.config.get("discord.webhook_urls").getAsJson5Array();
       for (final Json5Element element : arr) {
         this.plugin.runAsync(() -> {
@@ -371,7 +431,8 @@ public final class OriginBlacklist {
       } else {
         this.updatePlugin();
       }
-    }, () -> {});
+    }, () -> {
+    });
   }
 
   public static final String getComponentString(final Component comp) {

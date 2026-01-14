@@ -24,20 +24,21 @@ public class OriginBlacklistCommand implements ICommand {
     if (ctx.hasPermission("originblacklist.command")) {
       if (args.length > 0) {
         final OriginBlacklistConfig config = this.plugin.getConfig();
-        final String command = args[0].toLowerCase();
-        final String argA = args.length > 1 ? args[1].toLowerCase() : null;
+        final String command = args[0];
+        final String argA = args.length > 1 ? args[1] : null;
         ;
         final String argB = args.length > 2 ? args[2] : null;
-        final boolean add = "add".equals(command);
-        final boolean remove = "remove".equals(command);
-        if ("reload".equals(command)) {
+        final boolean add = "add".equalsIgnoreCase(command);
+        final boolean remove = "remove".equalsIgnoreCase(command);
+        if ("reload".equalsIgnoreCase(command)) {
           if (ctx.hasPermission("originblacklist.command.reload")) {
             config.reloadConfig();
+            this.plugin.handleReload();
             ctx.reply("<green>Configuration Reloaded</green>");
           } else {
             ctx.reply(NO_PERMISSION);
           }
-        } else if ("update".equals(command)) {
+        } else if ("update".equalsIgnoreCase(command)) {
           if (ctx.hasPermission("originblacklist.command.update")) {
             ctx.reply("<aqua>Checking for updates...</aqua>");
             this.plugin.checkForUpdates(() -> {
@@ -57,13 +58,13 @@ public class OriginBlacklistCommand implements ICommand {
           if ((add && ctx.hasPermission("originblacklist.command.add"))
               || (remove && ctx.hasPermission("originblacklist.command.add"))) {
             final String arrName;
-            if ("origin".equals(argA)) {
+            if ("origin".equalsIgnoreCase(argA)) {
               arrName = "origins";
-            } else if ("brand".equals(argA)) {
+            } else if ("brand".equalsIgnoreCase(argA)) {
               arrName = "brands";
-            } else if ("name".equals(argA)) {
+            } else if ("name".equalsIgnoreCase(argA)) {
               arrName = "player_names";
-            } else if ("ip".equals(argA)) {
+            } else if ("ip".equalsIgnoreCase(argA)) {
               arrName = "ip_addresses";
             } else {
               arrName = null;
@@ -94,7 +95,7 @@ public class OriginBlacklistCommand implements ICommand {
           } else {
             ctx.reply(NO_PERMISSION);
           }
-        } else if ("test".equals(command) && OriginBlacklist.isNonNull(argA)) {
+        } else if ("test".equalsIgnoreCase(command) && OriginBlacklist.isNonNull(argA)) {
           if (ctx.hasPermission("originblacklist.command.test")) {
             if (this.isBlacklisted(argA)) {
               ctx.reply("<green>" + argA + " is on the blacklist.</green>");
@@ -104,7 +105,7 @@ public class OriginBlacklistCommand implements ICommand {
           } else {
             ctx.reply(NO_PERMISSION);
           }
-        } else if ("list".equals(command)) {
+        } else if ("list".equalsIgnoreCase(command)) {
           if (ctx.hasPermission("originblacklist.command.list")) {
             ctx.reply("<aqua>Blacklist:</aqua>");
             ctx.reply("<gold>  - Origins:</gold>");

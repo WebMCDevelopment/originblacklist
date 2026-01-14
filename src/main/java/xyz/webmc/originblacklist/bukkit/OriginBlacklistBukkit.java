@@ -93,6 +93,11 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
     }
   }
 
+  @Override
+  public void onDisable() {
+    this.blacklist.shutdown();
+  }
+
   @EventHandler(priority = EventPriority.NORMAL)
   public final void onEaglerLogin(final EaglercraftLoginEvent event) {
     final OPlayer player = new OPlayer(event.getLoginConnection(), event.getProfileUsername(), event.getProfileUUID());

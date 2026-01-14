@@ -24,6 +24,7 @@ import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.player.PlayerClientBrandEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyPingEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -103,6 +104,11 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
         return playerMap;
       }));
     }
+  }
+
+  @Subscribe
+  public final void onProxyShutdown(final ProxyShutdownEvent e) {
+    this.blacklist.shutdown();
   }
 
   @Subscribe(order = PostOrder.FIRST)
