@@ -161,7 +161,7 @@ public final class OriginBlacklist {
     conn.disconnect();
   }
 
-  public final void checkForUpdates(Runnable action1, Runnable action2) {
+  public final void checkForUpdates(final Runnable action1, final Runnable action2) {
     if (this.config.getBoolean("update_checker.enabled")) {
       this.plugin.runAsync(() -> {
         this.updateURL = UpdateChecker.checkForUpdates(PLUGIN_REPO, this.plugin.getPluginVersion(),
@@ -177,7 +177,7 @@ public final class OriginBlacklist {
     }
   }
 
-  public final void updatePlugin(Runnable action1, Runnable action2) {
+  public final void updatePlugin(final Runnable action1, final Runnable action2) {
     try {
       final URL url = new URL(this.updateURL);
       final Path jar = this.plugin.getPluginJarPath();

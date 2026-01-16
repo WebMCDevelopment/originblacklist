@@ -149,9 +149,9 @@ public class OriginBlacklistCommand implements ICommand {
     ctx.reply("<aqua>Commands:</aqua>");
     ctx.reply("<gray>  - /originblacklist reload</gray>");
     ctx.reply("<gray>  - /originblacklist update</gray>");
-    ctx.reply("<gray>  - /originblacklist add <origin/brand/name/ip> <argB></gray>");
-    ctx.reply("<gray>  - /originblacklist remove <origin/brand/name/ip> <argB></gray>");
-    ctx.reply("<gray>  - /originblacklist test <argB></gray>");
+    ctx.reply("<gray>  - /originblacklist add <origin/brand/name/ip> <arg></gray>");
+    ctx.reply("<gray>  - /originblacklist remove <origin/brand/name/ip> <arg></gray>");
+    ctx.reply("<gray>  - /originblacklist test <arg></gray>");
     ctx.reply("<gray>  - /originblacklist list</gray>");
   }
 

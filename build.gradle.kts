@@ -148,8 +148,9 @@ tasks.withType<ShadowJar>().configureEach {
     delete(layout.buildDirectory.dir("libs"))
     mkdir(layout.buildDirectory.dir("libs"))
   }
-  relocate("org.bstats", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.bstats")
+  relocate("inet.ipaddr", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.ipaddress")
   relocate("de.marhali.json5", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.json5")
+  relocate("org.bstats", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.bstats")
   relocate("org.semver4j.semver4j", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.semver4j")
   // relocate("net.kyori.adventure", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.adventure")
   archiveFileName.set("$PLUGIN_NAME-$PLUGIN_VERS.jar")
