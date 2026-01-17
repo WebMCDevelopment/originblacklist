@@ -1,7 +1,6 @@
 package xyz.webmc.originblacklist.base.config;
 
 import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;

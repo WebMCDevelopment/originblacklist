@@ -57,23 +57,25 @@ public final class OriginBlacklist {
   private final OriginBlacklistHTTPServer http;
   private final Json5 json5;
   private String updateURL;
+  private Path jarFile;
 
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(this);
     this.http = new OriginBlacklistHTTPServer(this);
     this.json5 = Json5.builder(builder -> builder.prettyPrinting().indentFactor(0).build());
-    plugin.scheduleRepeat(() -> {
-      this.checkForUpdates();
-    }, this.config.getInteger("update_checker.check_timer"), TimeUnit.SECONDS);
   }
 
   public final void init() {
-    this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
-    this.plugin.log(EnumLogLevel.DEBUG, "Commit " + COMMIT_L);
+    this.jarFile = this.plugin.getPluginJarPath();
+    this.plugin.scheduleRepeat(() -> {
+      this.checkForUpdates();
+    }, this.config.getInteger("update_checker.check_timer"), TimeUnit.SECONDS);
     if (this.isHTTPServerEnabled()) {
       this.http.start();
     }
+    this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
+    this.plugin.log(EnumLogLevel.DEBUG, "Commit " + COMMIT_L);
   }
 
   public final void shutdown() {
@@ -190,7 +192,7 @@ public final class OriginBlacklist {
   public final void updatePlugin(final Runnable action1, final Runnable action2) {
     try {
       final URL url = new URL(this.updateURL);
-      final Path jar = this.plugin.getPluginJarPath();
+      final Path jar = this.jarFile;
       final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
       final Path upd = jar
           .resolveSibling(Paths.get(URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8)).getFileName());
@@ -215,6 +217,7 @@ public final class OriginBlacklist {
         }
         Files.delete(jar);
         Files.delete(bak);
+        this.jarFile = upd;
         action1.run();
         return;
       } catch (final Throwable t) {
