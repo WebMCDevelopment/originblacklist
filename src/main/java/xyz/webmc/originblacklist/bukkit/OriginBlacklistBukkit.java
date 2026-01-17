@@ -112,15 +112,13 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
 
   @EventHandler(priority = EventPriority.LOWEST)
   public final void onJavaLogin(final AsyncPlayerPreLoginEvent event) {
-    final OPlayer player = new OPlayer(null, event.getName(), event.getUniqueId(),
-        event.getAddress() != null ? event.getAddress().toString() : null, OriginBlacklist.UNKNOWN_STR, -1);
+    final OPlayer player = new OPlayer(null, event.getName(), event.getUniqueId(), event.getAddress().toString(), OriginBlacklist.UNKNOWN_STR, OriginBlacklist.UNKNOWN_STR, -1);
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onJavaMOTD(final ServerListPingEvent event) {
-    final OPlayer player = new OPlayer(null, null, null,
-        event.getAddress() != null ? event.getAddress().toString() : null, null, -1);
+    final OPlayer player = new OPlayer(null, null, null, event.getAddress().toString(), null, null,  -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 

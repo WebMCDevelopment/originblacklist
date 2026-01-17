@@ -16,16 +16,18 @@ public final class OPlayer {
   private final String name;
   private final UUID uuid;
   private final String brand;
+  private final String vhost;
   private final boolean rewind;
   private final int pvn;
 
   public OPlayer(final IEaglerConnection conn, final String name, final UUID uuid, final String addr,
-      final String brand, final int pvn) {
+      final String brand, final String vhost, final int pvn) {
     this.name = name;
     this.uuid = uuid;
     if (conn != null) {
       this.origin = conn.getWebSocketHeader(EnumWebSocketHeader.HEADER_ORIGIN);
       this.addr = formatSocketAddress(conn.getSocketAddress());
+      this.vhost = conn.isWebSocketSecure() ? "wss://" : "ws://" + conn.getWebSocketHost();
       if (conn instanceof IEaglerLoginConnection) {
         final IEaglerLoginConnection loginConn = (IEaglerLoginConnection) conn;
         this.brand = loginConn.getEaglerBrandString();
@@ -40,13 +42,14 @@ public final class OPlayer {
       this.origin = OriginBlacklist.UNKNOWN_STR;
       this.addr = formatIPAddress(addr);
       this.brand = brand;
+      this.vhost = vhost;
       this.rewind = false;
       this.pvn = pvn;
     }
   }
 
   public OPlayer(final IEaglerConnection conn, final String name, final UUID uuid) {
-    this(conn, name, uuid, null, null, -1);
+    this(conn, name, uuid, null, null, null, -1);
   }
 
   public final String getOrigin() {
@@ -67,6 +70,10 @@ public final class OPlayer {
 
   public final String getBrand() {
     return this.brand;
+  }
+
+  public final String getVHost() {
+    return this.vhost;
   }
 
   public final boolean isRewind() {

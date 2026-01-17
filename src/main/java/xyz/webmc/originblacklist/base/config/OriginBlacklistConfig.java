@@ -31,7 +31,7 @@ public final class OriginBlacklistConfig {
   private byte[] icon;
   private String icon64;
 
-  public OriginBlacklistConfig(final IOriginBlacklistPlugin plugin) {
+  public OriginBlacklistConfig(final OriginBlacklist plugin) {
     this.json5 = Json5.builder(builder -> builder
         .quoteless()
         .quoteSingle()
@@ -39,10 +39,10 @@ public final class OriginBlacklistConfig {
         .writeComments()
         .prettyPrinting()
         .build());
-    final String dir = "plugins/" + plugin.getPluginId();
-    this.file = new File(dir + "/config.json5");
+    
+    this.file = new File(plugin.getDataDir() + "/config.json5");
     this.filePath = file.toPath();
-    this.iconFile = new File(dir + "/blacklisted.png");
+    this.iconFile = new File(plugin.getDataDir() + "/blacklisted.png");
     this.iconPath = iconFile.toPath();
     this.loadConfig();
   }
@@ -321,6 +321,7 @@ public final class OriginBlacklistConfig {
     addJSONObj(obj, "blacklist_to_whitelist", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "block_undefined_origin", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(obj, "logFile", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "config_version", Json5Primitive.fromNumber(1), "DO NOT CHANGE");
     return obj;
   }

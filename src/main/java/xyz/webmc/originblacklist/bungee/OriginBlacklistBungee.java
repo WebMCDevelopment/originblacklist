@@ -10,6 +10,7 @@ import xyz.webmc.originblacklist.base.util.IncompatibleDependencyException;
 import xyz.webmc.originblacklist.base.util.OPlayer;
 import xyz.webmc.originblacklist.bungee.command.OriginBlacklistCommandBungee;
 
+import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftLogin
 import net.lax1dude.eaglercraft.backend.server.api.bungee.event.EaglercraftMOTDEvent;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.ServerPing;
+import net.md_5.bungee.api.connection.PendingConnection;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.event.PreLoginEvent;
@@ -108,21 +110,27 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onJavaLogin(final PostLoginEvent event) {
+    final PendingConnection conn = event.getPlayer().getPendingConnection();
+    final InetSocketAddress vhost = conn.getVirtualHost();
     final ProxiedPlayer aPlayer = event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getName(), aPlayer.getUniqueId(),
-        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), event.getPlayer().getPendingConnection().getVersion());
+        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), vhost.getHostString() + vhost.getPort(), conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onJavaHandshake(final PreLoginEvent event) {
-    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), OriginBlacklist.UNKNOWN_STR, event.getConnection().getVersion());
+    final PendingConnection conn = event.getConnection();
+    final InetSocketAddress vhost = conn.getVirtualHost();
+    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), OriginBlacklist.UNKNOWN_STR, vhost.getHostString() + vhost.getPort(), conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public final void onJavaMOTD(final ProxyPingEvent event) {
-    final OPlayer player = new OPlayer(null, null, null, event.getConnection().getAddress().toString(), null, -1);
+    final PendingConnection conn = event.getConnection();
+    final InetSocketAddress vhost = conn.getVirtualHost();
+    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), null, vhost.getHostString() + vhost.getPort(), -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 

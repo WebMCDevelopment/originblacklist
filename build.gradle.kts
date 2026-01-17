@@ -12,9 +12,9 @@ import xyz.jpenilla.runvelocity.task.RunVelocity
 
 val PLUGIN_NAME = "OriginBlacklist"
 val PLUGIN_IDEN = "originblacklist"
-val PLUGIN_DOMN = "xyz.webmc"
+val PLUGIN_DOMN = "xyz.webmc.$PLUGIN_IDEN"
 val PLUGIN_DESC = "An eaglercraft client blacklist plugin."
-val PLUGIN_VERS = "2.0.5"
+val PLUGIN_VERS = "2.0.6"
 val PLUGIN_SITE = "https://github.com/WebMCDevelopment/$PLUGIN_IDEN"
 val PLUGIN_DEPA = listOf("EaglercraftXServer")
 val PLUGIN_DEPB = listOf("EaglercraftXServer")
@@ -148,11 +148,11 @@ tasks.withType<ShadowJar>().configureEach {
     delete(layout.buildDirectory.dir("libs"))
     mkdir(layout.buildDirectory.dir("libs"))
   }
-  relocate("inet.ipaddr", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.ipaddress")
-  relocate("de.marhali.json5", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.json5")
-  relocate("org.bstats", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.bstats")
-  relocate("org.semver4j.semver4j", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.semver4j")
-  // relocate("net.kyori.adventure", "$PLUGIN_DOMN.$PLUGIN_IDEN.shaded.adventure")
+  relocate("inet.ipaddr", "$PLUGIN_DOMN.shaded.ipaddress")
+  relocate("de.marhali.json5", "$PLUGIN_DOMN.shaded.json5")
+  relocate("org.bstats", "$PLUGIN_DOMN.shaded.bstats")
+  relocate("org.semver4j.semver4j", "$PLUGIN_DOMN.shaded.semver4j")
+  // relocate("net.kyori.adventure", "$PLUGIN_DOMN.shaded.adventure")
   archiveFileName.set("$PLUGIN_NAME-$PLUGIN_VERS.jar")
 }
 

@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -36,15 +38,17 @@ import inet.ipaddr.IPAddressString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.lax1dude.eaglercraft.backend.server.api.EnumWebSocketHeader;
-import net.lax1dude.eaglercraft.backend.server.api.IEaglerLoginConnection;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
 import org.semver4j.Semver;
 
 public final class OriginBlacklist {
+  private static final String COMMIT_L = BuildInfo.get("git_cm_hash");
+  private static final String COMMIT_S = COMMIT_L.substring(0, 8);
+
   public static final Semver REQUIRED_API_VER = new Semver("1.0.2");
   public static final String GENERIC_STR = "GENERIC";
   public static final String UNKNOWN_STR = "UNKNOWN";
+  public static final String CENSORED_STR = "CENSORED";
   public static final String PLUGIN_REPO = "WebMCDevelopment/originblacklist";
   public static final int BSTATS_ID = 28776;
 
@@ -56,7 +60,7 @@ public final class OriginBlacklist {
 
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
-    this.config = new OriginBlacklistConfig(plugin);
+    this.config = new OriginBlacklistConfig(this);
     this.http = new OriginBlacklistHTTPServer(this);
     this.json5 = Json5.builder(builder -> builder.prettyPrinting().indentFactor(0).build());
     plugin.scheduleRepeat(() -> {
@@ -66,7 +70,7 @@ public final class OriginBlacklist {
 
   public final void init() {
     this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
-    this.plugin.log(EnumLogLevel.DEBUG, "Commit " + BuildInfo.get("git_cm_hash"));
+    this.plugin.log(EnumLogLevel.DEBUG, "Commit " + COMMIT_L);
     if (this.isHTTPServerEnabled()) {
       this.http.start();
     }
@@ -75,6 +79,7 @@ public final class OriginBlacklist {
   public final void shutdown() {
     this.plugin.log(EnumLogLevel.INFO, "Shutting down...");
     this.http.stop();
+    this.plugin.shutdown();
   }
 
   public final void handleReload() {
@@ -108,6 +113,7 @@ public final class OriginBlacklist {
       final String name = player.getName();
       if (isNonNull(name)) {
         this.plugin.log(EnumLogLevel.INFO, "Prevented blacklisted player " + name + " from joining.");
+        this.updateLogFile(event, blacklisted);
       }
     }
   }
@@ -136,6 +142,10 @@ public final class OriginBlacklist {
 
   public final boolean isMetricsEnabled() {
     return this.config.getBoolean("bStats");
+  }
+
+  public final boolean isLogFileEnabled() {
+    return this.config.getBoolean("logFile");
   }
 
   public final boolean isHTTPServerEnabled() {
@@ -317,6 +327,10 @@ public final class OriginBlacklist {
     }
   }
 
+  public final String getDataDir() {
+    return "plugins/" + plugin.getPluginId();
+  }
+
   private final Component getBlacklistedComponent(final String type, final String id, final String blockType,
       final String blockTypeAlt, final String notAllowed, final String notAllowedAlt, final String blockValue,
       final String action) {
@@ -341,13 +355,13 @@ public final class OriginBlacklist {
     if (this.config.getBoolean("discord.enabled")) {
       final OPlayer player = event.getPlayer();
       final EnumConnectionType connType = event.getConnectionType();
-      final String userAgent;
+      /* final String userAgent;
       if (connType == EnumConnectionType.EAGLER) {
         final IEaglerLoginConnection loginConn = event.getEaglerEvent().getLoginConnection();
         userAgent = loginConn.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
       } else {
         userAgent = UNKNOWN_STR;
-      }
+      } */
       final byte[] payload = String.format(
           """
                 {
@@ -355,11 +369,11 @@ public final class OriginBlacklist {
                   "embeds": [
                     {
                       "title": "-------- Player Information --------",
-                      "description": "**→ Name:** %s\\n**→ Origin:** %s\\n**→ Brand:** %s\\n**→ IP Address:** %s\\n**→ Protocol Version:** %s\\n**→ User Agent:** %s\\n**→ Rewind:** %s\\n**→ Player Type:** %s",
+                      "description": "**→ Name:** %s\\n**→ Origin:** %s\\n**→ Brand:** %s\\n**→ IP Address:** %s\\n**→ Protocol Version:** %s\\n**→ Host:** %s\\n**→ Rewind:** %s\\n**→ Player Type:** %s",
                       "color": 15801922,
                       "fields": [],
                       "footer": {
-                        "text": "OriginBlacklist v%s",
+                        "text": "%s v%s",
                         "icon_url": "https://raw.githubusercontent.com/%s/refs/heads/main/img/icon.png"
                       }
                     }
@@ -386,12 +400,14 @@ public final class OriginBlacklist {
           player.getName().replaceAll("_", "\\_"),
           player.getOrigin(),
           player.getBrand(),
-          this.config.getBoolean("discord.send_ips") ? player.getAddr() : "*\\*CENSORED\\**",
+          this.config.getBoolean("discord.send_ips") ? player.getAddr() : CENSORED_STR,
           player.getPVN(),
-          userAgent,
+          player.getVHost(),
+          // userAgent,
           player.isRewind() ? "YES" : "NO",
           connType.toString(),
-          this.plugin.getPluginVersion(),
+          BuildInfo.get("plugin_name"),
+          this.plugin.getPluginVersion() + " • " + COMMIT_S,
           PLUGIN_REPO,
           PLUGIN_REPO).getBytes();
       final Json5Array arr = this.config.get("discord.webhook_urls").getAsJson5Array();
@@ -433,6 +449,26 @@ public final class OriginBlacklist {
       }
     }, () -> {
     });
+  }
+
+  private final void updateLogFile(final OriginBlacklistLoginEvent event, final EnumBlacklistType type) {
+    if (this.isLogFileEnabled()) {
+      final OPlayer player = event.getPlayer();
+      final String txt = Instant.now() + " - [player=" + player.getName() + "," + "blacklist_reason=" + type.toString() + "]";
+      final Path dir = Paths.get(this.getDataDir());
+      try {
+        Files.createDirectories(dir);
+        Files.writeString(
+          dir.resolve("blacklist.log"),
+          txt + "\n",
+          StandardOpenOption.CREATE,
+          StandardOpenOption.WRITE,
+          StandardOpenOption.APPEND
+        );
+      } catch (final Throwable t) {
+        t.printStackTrace();
+      }
+    }
   }
 
   public static final String getComponentString(final Component comp) {

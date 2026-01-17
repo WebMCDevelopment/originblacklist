@@ -156,7 +156,7 @@ public class OriginBlacklistCommand implements ICommand {
   }
 
   private final boolean isBlacklisted(final String str) {
-    final OPlayer player = new OPlayer(null, str, null, str, str, -1);
+    final OPlayer player = new OPlayer(null, str, null, str, str, null, -1);
     return this.plugin.testBlacklist(player) != EnumBlacklistType.NONE;
   }
 }
