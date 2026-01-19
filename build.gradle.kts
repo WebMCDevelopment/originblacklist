@@ -171,6 +171,7 @@ tasks.register("printVars") {
 tasks.withType<RunServer>().configureEach {
   minecraftVersion("1.12.2")
   runDirectory.set(layout.projectDirectory.dir("run/paper"))
+  jvmArgs("-Dcom.mojang.eula.agree=true")
   downloadPlugins {
     github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")
     modrinth("placeholderapi", "2.11.7")
