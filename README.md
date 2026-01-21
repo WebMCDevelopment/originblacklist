@@ -15,6 +15,7 @@
 - [x] Plugin update checker
 - [x] Send blacklist logs to a webhook
 - [x] Ingame blacklist management commands
+- [x] Blacklist sharing via EaglerXServer routes
 - [x] Reverse blacklist (whitelist)
 - [ ] Subscribe to an auto-updating blacklist
 

@@ -43,7 +43,6 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   private boolean papiPlaceholdersEnabled;
   private Object papi;
   private OriginBlacklist blacklist;
-  private IEaglerXServerAPI eaglerAPI;
   private Metrics metrics;
 
   @Override
@@ -71,8 +70,8 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
       this.papi = null;
     }
     this.blacklist = new OriginBlacklist(this);
-    this.eaglerAPI = EaglerXServerAPI.instance();
-    this.getProxy().getPluginManager().registerCommand(this, new OriginBlacklistCommandBungee(this, this.blacklist, "originblacklist"));
+    this.getProxy().getPluginManager().registerCommand(this,
+        new OriginBlacklistCommandBungee(this, this.blacklist, "originblacklist"));
     this.getProxy().getPluginManager().registerListener(this, this);
     this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
@@ -81,7 +80,7 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
         final Map<String, Integer> playerMap = new HashMap<>();
 
         for (final ProxiedPlayer player : this.proxy.getPlayers()) {
-          final boolean eagler = eaglerAPI.isEaglerPlayerByUUID(player.getUniqueId());
+          final boolean eagler = this.getEaglerAPI().isEaglerPlayerByUUID(player.getUniqueId());
           final String key = eagler ? "Eagler" : "Java";
           playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
         }
@@ -114,7 +113,8 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
     final InetSocketAddress vhost = conn.getVirtualHost();
     final ProxiedPlayer aPlayer = event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getName(), aPlayer.getUniqueId(),
-        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), vhost.getHostString() + vhost.getPort(), conn.getVersion());
+        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), vhost.getHostString() + vhost.getPort(),
+        conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
 
@@ -122,7 +122,8 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   public final void onJavaHandshake(final PreLoginEvent event) {
     final PendingConnection conn = event.getConnection();
     final InetSocketAddress vhost = conn.getVirtualHost();
-    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), OriginBlacklist.UNKNOWN_STR, vhost.getHostString() + vhost.getPort(), conn.getVersion());
+    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), OriginBlacklist.UNKNOWN_STR,
+        vhost.getHostString() + vhost.getPort(), conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -130,7 +131,8 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   public final void onJavaMOTD(final ProxyPingEvent event) {
     final PendingConnection conn = event.getConnection();
     final InetSocketAddress vhost = conn.getVirtualHost();
-    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), null, vhost.getHostString() + vhost.getPort(), -1);
+    final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), null,
+        vhost.getHostString() + vhost.getPort(), -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -147,6 +149,11 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   @Override
   public final Path getPluginJarPath() {
     return Paths.get(this.getFile().getAbsolutePath());
+  }
+
+  @Override
+  public final IEaglerXServerAPI getEaglerAPI() {
+    return EaglerXServerAPI.instance();
   }
 
   @Override

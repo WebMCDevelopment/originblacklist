@@ -54,7 +54,6 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   private boolean papiPlaceholdersEnabled;
   private Object papi;
   private OriginBlacklist blacklist;
-  private IEaglerXServerAPI eaglerAPI;
   private Metrics metrics;
 
   @Inject
@@ -89,7 +88,6 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
       this.papi = null;
     }
     this.blacklist = new OriginBlacklist(this);
-    this.eaglerAPI = EaglerXServerAPI.instance();
     this.proxy.getCommandManager().register("originblacklist", new OriginBlacklistCommandVelocity(this.blacklist));
     this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
@@ -98,7 +96,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
         final Map<String, Integer> playerMap = new HashMap<>();
 
         for (final Player player : this.proxy.getAllPlayers()) {
-          final boolean eagler = eaglerAPI.isEaglerPlayerByUUID(player.getUniqueId());
+          final boolean eagler = this.getEaglerAPI().isEaglerPlayerByUUID(player.getUniqueId());
           final String key = eagler ? "Eagler" : "Java";
           playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
         }
@@ -149,7 +147,8 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   public final void onJavaMOTD(final ProxyPingEvent event) {
     final InboundConnection conn = event.getConnection();
     final InetSocketAddress vhost = conn.getVirtualHost().orElseThrow();
-    final OPlayer player = new OPlayer(null, null, null, conn.getRemoteAddress().getHostString(), vhost.getHostString() + vhost.getPort(),
+    final OPlayer player = new OPlayer(null, null, null, conn.getRemoteAddress().getHostString(),
+        vhost.getHostString() + vhost.getPort(),
         null, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
@@ -171,6 +170,11 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     } catch (final Throwable t) {
       throw new RuntimeException("Unable to determine plugin JAR path");
     }
+  }
+
+  @Override
+  public final IEaglerXServerAPI getEaglerAPI() {
+    return EaglerXServerAPI.instance();
   }
 
   @Override

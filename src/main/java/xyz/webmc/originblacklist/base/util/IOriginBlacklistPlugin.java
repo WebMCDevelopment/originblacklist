@@ -8,14 +8,18 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import net.kyori.adventure.text.Component;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import org.semver4j.Semver;
 
+@SuppressWarnings({ "rawtypes" })
 public interface IOriginBlacklistPlugin {
   public String getPluginId();
 
   public Semver getPluginVersion();
 
   public Path getPluginJarPath();
+
+  public IEaglerXServerAPI getEaglerAPI();
 
   public void log(final EnumLogLevel level, final String txt);
 

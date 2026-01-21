@@ -6,7 +6,7 @@ import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
-import xyz.webmc.originblacklist.base.http.OriginBlacklistHTTPServer;
+import xyz.webmc.originblacklist.base.http.OriginBlacklistRequestHandler;
 import xyz.webmc.originblacklist.base.util.BuildInfo;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
@@ -38,9 +38,11 @@ import inet.ipaddr.IPAddressString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
 import org.semver4j.Semver;
 
+@SuppressWarnings({ "rawtypes" })
 public final class OriginBlacklist {
   private static final String COMMIT_L = BuildInfo.get("git_cm_hash");
   private static final String COMMIT_S = COMMIT_L.substring(0, 8);
@@ -54,7 +56,6 @@ public final class OriginBlacklist {
 
   private final IOriginBlacklistPlugin plugin;
   private final OriginBlacklistConfig config;
-  private final OriginBlacklistHTTPServer http;
   private final Json5 json5;
   private String updateURL;
   private Path jarFile;
@@ -62,7 +63,6 @@ public final class OriginBlacklist {
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(this);
-    this.http = new OriginBlacklistHTTPServer(this);
     this.json5 = Json5.builder(builder -> builder.prettyPrinting().indentFactor(0).build());
   }
 
@@ -71,8 +71,8 @@ public final class OriginBlacklist {
     this.plugin.scheduleRepeat(() -> {
       this.checkForUpdates();
     }, this.config.getInteger("update_checker.check_timer"), TimeUnit.SECONDS);
-    if (this.isHTTPServerEnabled()) {
-      this.http.start();
+    if (this.isBlacklistAPIEnabled()) {
+      OriginBlacklistRequestHandler.register(this);
     }
     this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
     this.plugin.log(EnumLogLevel.DEBUG, "Commit " + COMMIT_L);
@@ -80,15 +80,18 @@ public final class OriginBlacklist {
 
   public final void shutdown() {
     this.plugin.log(EnumLogLevel.INFO, "Shutting down...");
-    this.http.stop();
+    OriginBlacklistRequestHandler.unRegister(this);
     this.plugin.shutdown();
   }
 
   public final void handleReload() {
-    if (this.isHTTPServerEnabled()) {
-      this.http.start();
-    } else {
-      this.http.stop();
+    try {
+      if (this.isBlacklistAPIEnabled()) {
+        OriginBlacklistRequestHandler.register(this);
+      } else {
+        OriginBlacklistRequestHandler.unRegister(this);
+      }
+    } catch (final Throwable t) {
     }
   }
 
@@ -150,8 +153,8 @@ public final class OriginBlacklist {
     return this.config.getBoolean("logFile");
   }
 
-  public final boolean isHTTPServerEnabled() {
-    return this.config.getBoolean("blacklist_http_share.enabled");
+  public final boolean isBlacklistAPIEnabled() {
+    return this.config.getBoolean("blacklist_http_api");
   }
 
   public final OriginBlacklistConfig getConfig() {
@@ -332,6 +335,10 @@ public final class OriginBlacklist {
 
   public final String getDataDir() {
     return "plugins/" + plugin.getPluginId();
+  }
+
+  public final IEaglerXServerAPI getEaglerAPI() {
+    return this.plugin.getEaglerAPI();
   }
 
   private final Component getBlacklistedComponent(final String type, final String id, final String blockType,

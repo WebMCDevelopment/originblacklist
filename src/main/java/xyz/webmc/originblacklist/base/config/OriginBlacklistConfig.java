@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -21,6 +22,8 @@ import de.marhali.json5.Json5Object;
 import de.marhali.json5.Json5Primitive;
 
 public final class OriginBlacklistConfig {
+  private static final Json5Object DEFAULT_CONFIG = getDefaultConfig();
+
   private final Json5 json5;
   private final File file;
   private final Path filePath;
@@ -70,16 +73,14 @@ public final class OriginBlacklistConfig {
       Json5Element parsed = this.json5.parse(text);
       if (parsed instanceof Json5Object) {
         this.config = (Json5Object) parsed;
-        if (merge(this.config, getDefaultConfig())) {
-          this.saveConfig();
-        }
+        merge(this.config, DEFAULT_CONFIG);
       } else {
         throw new IOException("Config must be an object!");
       }
     } else {
-      this.config = getDefaultConfig();
-      this.saveConfig();
+      this.config = DEFAULT_CONFIG;
     }
+    this.saveConfig();
   }
 
   private final void reloadIconImage() {
@@ -206,7 +207,6 @@ public final class OriginBlacklistConfig {
           } else {
             element = null;
           }
-
           if (element == null) {
             break;
           }
@@ -312,11 +312,7 @@ public final class OriginBlacklistConfig {
     addJSONObj(uObj, "check_timer", Json5Primitive.fromNumber(3600), null);
     addJSONObj(uObj, "auto_update", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "update_checker", uObj, null);
-    final Json5Object hObj = new Json5Object();
-    addJSONObj(hObj, "enabled", Json5Primitive.fromBoolean(false), null);
-    addJSONObj(hObj, "http_port", Json5Primitive.fromNumber(8080), null);
-    addJSONObj(hObj, "listen_addr", Json5Primitive.fromString("0.0.0.0"), null);
-    addJSONObj(obj, "blacklist_http_share", hObj, null);
+    addJSONObj(obj, "blacklist_http_api", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "blacklist_to_whitelist", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "block_undefined_origin", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);
@@ -325,24 +321,157 @@ public final class OriginBlacklistConfig {
     return obj;
   }
 
-  private static final boolean merge(final Json5Object a, final Json5Object b) {
+  private static final boolean merge(final Json5Object aObj, final Json5Object bObj) {
+    final Json5Object ret = new Json5Object();
     boolean changed = false;
-
-    for (String key : b.keySet()) {
-      Json5Element element = b.get(key);
-      if (!a.has(key)) {
-        a.add(key, element.deepCopy());
-        changed = true;
-      } else {
-        final Json5Element _element = a.get(key);
-        if (_element instanceof Json5Object objA && element instanceof Json5Object objB) {
-          if (merge(objA, objB)) {
+    for (final String key : bObj.keySet()) {
+      final Json5Element dv = bObj.get(key);
+      if (aObj.has(key)) {
+        final Json5Element v = aObj.get(key);
+        if (dv instanceof Json5Object) {
+          if (v instanceof Json5Object) {
+            final boolean c = merge((Json5Object) v, (Json5Object) dv);
+            ret.add(key, (Json5Object) v);
+            if (c) {
+              changed = true;
+            }
+          } else {
+            ret.add(key, dv.deepCopy());
             changed = true;
           }
+        } else if (dv instanceof Json5Array) {
+          if (v instanceof Json5Array) {
+            final Json5Array vArr = (Json5Array) v;
+            final Json5Array dArr = (Json5Array) dv;
+            if (dArr.size() == 0) {
+              ret.add(key, vArr.deepCopy());
+            } else {
+              final Json5Element d0 = dArr.get(0);
+              if (d0 instanceof Json5Primitive && ((Json5Primitive) d0).isString()) {
+                final Json5Array out = new Json5Array();
+                for (final Json5Element e : vArr) {
+                  if (e instanceof Json5Primitive && ((Json5Primitive) e).isString()) {
+                    out.add(e.deepCopy());
+                  }
+                }
+                if (out.size() > 0) {
+                  if (out.size() != vArr.size()) {
+                    changed = true;
+                  }
+                  ret.add(key, out);
+                } else {
+                  ret.add(key, dArr.deepCopy());
+                  changed = true;
+                }
+              } else {
+                boolean a = true;
+                for (final Json5Element e : vArr) {
+                  if (e == null) {
+                    a = false;
+                  } else if (d0 instanceof Json5Object) {
+                    if (!(e instanceof Json5Object)) {
+                      a = false;
+                    }
+                  } else if (d0 instanceof Json5Array) {
+                    if (!(e instanceof Json5Array)) {
+                      a = false;
+                    }
+                  } else if (d0 instanceof Json5Primitive && e instanceof Json5Primitive) {
+                    final Json5Primitive bp = (Json5Primitive) d0;
+                    final Json5Primitive ap = (Json5Primitive) e;
+                    if (bp.isBoolean()) {
+                      if (!ap.isBoolean()) {
+                        a = false;
+                      }
+                    } else if (bp.isNumber()) {
+                      if (!ap.isNumber()) {
+                        a = false;
+                      }
+                    } else if (bp.isString()) {
+                      if (!ap.isString()) {
+                        a = false;
+                      }
+                    }
+                  } else {
+                    a = false;
+                  }
+                  if (!a) {
+                    break;
+                  }
+                }
+                if (a) {
+                  ret.add(key, vArr.deepCopy());
+                } else {
+                  ret.add(key, dArr.deepCopy());
+                  changed = true;
+                }
+              }
+            }
+          } else {
+            ret.add(key, dv.deepCopy());
+            changed = true;
+          }
+        } else if (dv instanceof Json5Primitive) {
+          if (v instanceof Json5Primitive) {
+            final Json5Primitive dp = (Json5Primitive) dv;
+            final Json5Primitive vp = (Json5Primitive) v;
+            if (dp.isBoolean()) {
+              if (vp.isBoolean()) {
+                ret.add(key, vp.deepCopy());
+              } else {
+                ret.add(key, dv.deepCopy());
+                changed = true;
+              }
+            } else if (dp.isNumber()) {
+              if (vp.isNumber()) {
+                ret.add(key, vp.deepCopy());
+              } else {
+                ret.add(key, dv.deepCopy());
+                changed = true;
+              }
+            } else if (dp.isString()) {
+              if (vp.isString()) {
+                ret.add(key, vp.deepCopy());
+              } else {
+                ret.add(key, dv.deepCopy());
+                changed = true;
+              }
+            } else {
+              ret.add(key, dv.deepCopy());
+              changed = true;
+            }
+          } else {
+            ret.add(key, dv.deepCopy());
+            changed = true;
+          }
+        } else {
+          ret.add(key, dv.deepCopy());
+          changed = true;
         }
+      } else {
+        ret.add(key, dv.deepCopy());
+        changed = true;
       }
     }
-
+    for (final String key : aObj.keySet()) {
+      if (!bObj.has(key)) {
+        ret.add(key, aObj.get(key).deepCopy());
+      }
+    }
+    for (final String key : aObj.keySet()) {
+      if (!bObj.has(key)) {
+        ret.add(key, aObj.get(key).deepCopy());
+      }
+    }
+    for (final String k : new ArrayList<>(aObj.keySet())) {
+      aObj.remove(k);
+    }
+    for (final String k : ret.keySet()) {
+      aObj.add(k, ret.get(k));
+    }
+    for (final String key : ret.keySet()) {
+      aObj.add(key, ret.get(key));
+    }
     return changed;
   }
 

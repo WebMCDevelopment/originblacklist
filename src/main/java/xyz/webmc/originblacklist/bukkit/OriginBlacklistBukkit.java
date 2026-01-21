@@ -45,7 +45,6 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   private boolean papiPlaceholdersEnabled;
   private Object papi;
   private OriginBlacklist blacklist;
-  private IEaglerXServerAPI eaglerAPI;
   private Metrics metrics;
 
   private CachedServerIcon iconCache;
@@ -73,7 +72,6 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
       this.papi = null;
     }
     this.blacklist = new OriginBlacklist(this);
-    this.eaglerAPI = EaglerXServerAPI.instance();
     this.getCommand("originblacklist").setExecutor(new OriginBlacklistCommandBukkit(this.blacklist));
     this.getServer().getPluginManager().registerEvents(this, this);
     this.blacklist.init();
@@ -83,7 +81,7 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
         final Map<String, Integer> playerMap = new HashMap<>();
 
         for (final Player player : Bukkit.getOnlinePlayers()) {
-          final boolean eagler = eaglerAPI.isEaglerPlayerByUUID(player.getUniqueId());
+          final boolean eagler = this.getEaglerAPI().isEaglerPlayerByUUID(player.getUniqueId());
           final String key = eagler ? "Eagler" : "Java";
           playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
         }
@@ -112,13 +110,14 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
 
   @EventHandler(priority = EventPriority.LOWEST)
   public final void onJavaLogin(final AsyncPlayerPreLoginEvent event) {
-    final OPlayer player = new OPlayer(null, event.getName(), event.getUniqueId(), event.getAddress().toString(), OriginBlacklist.UNKNOWN_STR, OriginBlacklist.UNKNOWN_STR, -1);
+    final OPlayer player = new OPlayer(null, event.getName(), event.getUniqueId(), event.getAddress().toString(),
+        OriginBlacklist.UNKNOWN_STR, OriginBlacklist.UNKNOWN_STR, -1);
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public final void onJavaMOTD(final ServerListPingEvent event) {
-    final OPlayer player = new OPlayer(null, null, null, event.getAddress().toString(), null, null,  -1);
+    final OPlayer player = new OPlayer(null, null, null, event.getAddress().toString(), null, null, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -135,6 +134,11 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   @Override
   public final Path getPluginJarPath() {
     return Paths.get(this.getFile().getAbsolutePath());
+  }
+
+  @Override
+  public final IEaglerXServerAPI getEaglerAPI() {
+    return EaglerXServerAPI.instance();
   }
 
   @Override
