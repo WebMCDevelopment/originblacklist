@@ -321,6 +321,7 @@ public final class OriginBlacklist {
     try {
       final Json5Object obj = new Json5Object();
       obj.addProperty("plugin_version", this.plugin.getPluginVersion().getVersion());
+      obj.addProperty("git_commit", COMMIT_L);
       obj.addProperty("blacklist_to_whitelist", this.config.getBoolean("blacklist_to_whitelist"));
       obj.addProperty("block_undefined_origin", this.config.getBoolean("block_undefined_origin"));
       final Json5Object bObj = new Json5Object();
