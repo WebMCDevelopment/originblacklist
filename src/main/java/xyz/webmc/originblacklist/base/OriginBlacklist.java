@@ -80,7 +80,9 @@ public final class OriginBlacklist {
 
   public final void shutdown() {
     this.plugin.log(EnumLogLevel.INFO, "Shutting down...");
-    OriginBlacklistRequestHandler.unRegister(this);
+    if (this.isBlacklistAPIEnabled()) {
+      OriginBlacklistRequestHandler.unRegister(this);
+    }
     this.plugin.shutdown();
   }
 
