@@ -101,7 +101,7 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(event, null, EnumConnectionType.EAGLER, player));
   }
 
-  @EventHandler(priority = EventPriority.LOWEST)
+  @EventHandler(priority = xyz.webmc.originblacklist.base.util.EventPriority.EAGLER_MOTD_EVENT)
   public final void onEaglerMOTD(final EaglercraftMOTDEvent event) {
     final OPlayer player = new OPlayer(event.getMOTDConnection(), null, null);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(event, null, EnumConnectionType.EAGLER, player));
