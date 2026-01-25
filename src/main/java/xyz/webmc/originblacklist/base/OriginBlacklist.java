@@ -114,7 +114,7 @@ public final class OriginBlacklist {
       }
       this.plugin.kickPlayer(this.getBlacklistedComponent("kick", blacklisted.getArrayString(),
           blacklisted.getAltString(), blacklisted.getString(), "not allowed", "not allowed on the server",
-          blacklisted_value, blacklisted.getActionString()), event);
+          blacklisted_value, blacklisted.getActionString(), false), event);
       this.sendWebhooks(event, blacklisted);
       final String name = player.getName();
       if (isNonNull(name)) {
@@ -136,9 +136,12 @@ public final class OriginBlacklist {
       } else {
         blacklisted_value = UNKNOWN_STR;
       }
-      this.plugin.setMOTD(this.getBlacklistedComponent("motd", blacklisted.getArrayString(), blacklisted.getAltString(),
-          blacklisted.getString(), "blacklisted", "blacklisted from the server", blacklisted_value,
-          blacklisted.getActionString()), event);
+      if (this.isMOTDEnabled()) {
+        this.plugin
+            .setMOTD(this.getBlacklistedComponent("motd", blacklisted.getArrayString(), blacklisted.getAltString(),
+                blacklisted.getString(), "blacklisted", "blacklisted from the server", blacklisted_value,
+                blacklisted.getActionString(), true), event);
+      }
     }
   }
 
@@ -148,6 +151,14 @@ public final class OriginBlacklist {
 
   public final boolean isMetricsEnabled() {
     return this.config.getBoolean("bStats");
+  }
+
+  public final boolean isMOTDEnabled() {
+    return this.config.getBoolean("motd.enabled");
+  }
+
+  public final boolean isWebhooksEnabled() {
+    return this.config.getBoolean("discord.webhook.enabled");
   }
 
   public final boolean isLogFileEnabled() {
@@ -165,13 +176,17 @@ public final class OriginBlacklist {
   public final void setEaglerMOTD(final Component comp, final OriginBlacklistMOTDEvent event) {
     final IMOTDConnection conn = event.getEaglerEvent().getMOTDConnection();
     final List<String> lst = new ArrayList<>();
-    for (String ln : getComponentString(comp).split("\n")) {
+    for (final String ln : getComponentString(comp).split("\n")) {
       lst.add(ln);
     }
+    final List<String> pLst = new ArrayList<>();
+    for (final Json5Element ln : this.config.getArray("motd.players.hover").getAsJson5Array()) {
+      pLst.add(getLegacyFromMiniMessage(ln.getAsString().replaceAll("%discord_invite%", this.config.getString("discord.invite"))));
+    }
     conn.setServerMOTD(lst);
-    conn.setPlayerTotal(0);
-    conn.setPlayerUnlimited();
-    conn.setPlayerList(List.of());
+    conn.setPlayerTotal(this.config.getInteger("motd.players.online"));
+    conn.setPlayerMax(this.config.getInteger("motd.players.max"));
+    conn.setPlayerList(pLst);
     conn.setServerIcon(this.config.getIconBytes());
     conn.sendToUser();
     conn.disconnect();
@@ -345,8 +360,8 @@ public final class OriginBlacklist {
 
   private final Component getBlacklistedComponent(final String type, final String id, final String blockType,
       final String blockTypeAlt, final String notAllowed, final String notAllowedAlt, final String blockValue,
-      final String action) {
-    final Json5Array arr = this.config.getArray("messages." + type);
+      final String action, final boolean isMOTD) {
+    final Json5Array arr = this.config.getArray(isMOTD ? (type + ".text") : ("messages." + type));
     final StringBuilder sb = new StringBuilder();
     for (int i = 0; i < arr.size(); i++) {
       if (i > 0)
@@ -359,21 +374,26 @@ public final class OriginBlacklist {
         .replaceAll("%block_type%", blockType)
         .replaceAll("%not_allowed%", notAllowed)
         .replaceAll("%not_allowed_alt%", notAllowedAlt)
-        .replaceAll("%blocked_value%", blockValue);
+        .replaceAll("%blocked_value%", blockValue)
+        .replaceAll("%discord_invite%", this.config.getString("discord.invite"));
     return MiniMessage.miniMessage().deserialize(str);
   }
 
   private final void sendWebhooks(final OriginBlacklistLoginEvent event, final EnumBlacklistType type) {
-    if (this.config.getBoolean("discord.enabled")) {
+    if (this.isWebhooksEnabled()) {
       final OPlayer player = event.getPlayer();
       final EnumConnectionType connType = event.getConnectionType();
-      /* final String userAgent;
-      if (connType == EnumConnectionType.EAGLER) {
-        final IEaglerLoginConnection loginConn = event.getEaglerEvent().getLoginConnection();
-        userAgent = loginConn.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
-      } else {
-        userAgent = UNKNOWN_STR;
-      } */
+      /*
+       * final String userAgent;
+       * if (connType == EnumConnectionType.EAGLER) {
+       * final IEaglerLoginConnection loginConn =
+       * event.getEaglerEvent().getLoginConnection();
+       * userAgent =
+       * loginConn.getWebSocketHeader(EnumWebSocketHeader.HEADER_USER_AGENT);
+       * } else {
+       * userAgent = UNKNOWN_STR;
+       * }
+       */
       final byte[] payload = String.format(
           """
                 {
@@ -466,17 +486,17 @@ public final class OriginBlacklist {
   private final void updateLogFile(final OriginBlacklistLoginEvent event, final EnumBlacklistType type) {
     if (this.isLogFileEnabled()) {
       final OPlayer player = event.getPlayer();
-      final String txt = Instant.now() + " - [player=" + player.getName() + "," + "blacklist_reason=" + type.toString() + "]";
+      final String txt = Instant.now() + " - [player=" + player.getName() + "," + "blacklist_reason=" + type.toString()
+          + "]";
       final Path dir = Paths.get(this.getDataDir());
       try {
         Files.createDirectories(dir);
         Files.writeString(
-          dir.resolve("blacklist.log"),
-          txt + "\n",
-          StandardOpenOption.CREATE,
-          StandardOpenOption.WRITE,
-          StandardOpenOption.APPEND
-        );
+            dir.resolve("blacklist.log"),
+            txt + "\n",
+            StandardOpenOption.CREATE,
+            StandardOpenOption.WRITE,
+            StandardOpenOption.APPEND);
       } catch (final Throwable t) {
         t.printStackTrace();
       }

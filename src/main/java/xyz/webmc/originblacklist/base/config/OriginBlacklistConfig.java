@@ -22,7 +22,8 @@ import de.marhali.json5.Json5Object;
 import de.marhali.json5.Json5Primitive;
 
 public final class OriginBlacklistConfig {
-  private static final Json5Object DEFAULT_CONFIG = getDefaultConfig();
+  public static final Json5Object DEFAULT_CONFIG = getDefaultConfig();
+  public static final int LATEST_CONFIG_VERSION = 2;
 
   private final Json5 json5;
   private final File file;
@@ -41,7 +42,7 @@ public final class OriginBlacklistConfig {
         .writeComments()
         .prettyPrinting()
         .build());
-    
+
     this.file = new File(plugin.getDataDir() + "/config.json5");
     this.filePath = file.toPath();
     this.iconFile = new File(plugin.getDataDir() + "/blacklisted.png");
@@ -73,6 +74,7 @@ public final class OriginBlacklistConfig {
       Json5Element parsed = this.json5.parse(text);
       if (parsed instanceof Json5Object) {
         this.config = (Json5Object) parsed;
+        this.config = OriginBlacklistConfigTransformer.transformConfig(this.config);
         merge(this.config, DEFAULT_CONFIG);
       } else {
         throw new IOException("Config must be an object!");
@@ -262,18 +264,29 @@ public final class OriginBlacklistConfig {
     kick.add("%action%");
     kick.add("");
     kick.add("<aqua>Think this is a mistake? Join our discord:</aqua>");
-    kick.add("<blue>discord.gg/changethisintheconfig</blue>");
+    kick.add("<blue>%discord_invite%</blue>");
     addJSONObj(mObj, "kick", kick, null);
-    final Json5Array motd = new Json5Array();
-    motd.add("<red>This %block_type% is %not_allowed%!</red>");
-    motd.add("<dark_gray>»</dark_gray> <gray>%blocked_value%</gray>");
-    addJSONObj(mObj, "motd", motd, null);
     final Json5Object actions = new Json5Object();
     actions.add("generic", Json5Primitive.fromString("<gold>Please switch to a different %block_type%.</gold>"));
     actions.add("player_name", Json5Primitive.fromString("<gold>Please change your %block_type%.</gold>"));
     actions.add("ip_address", Json5Primitive.fromString("<gold>Please contact staff for assistance.</gold>"));
     addJSONObj(mObj, "actions", actions, null);
     addJSONObj(obj, "messages", mObj, null);
+    final Json5Object nObj = new Json5Object();
+    addJSONObj(nObj, "enabled", Json5Primitive.fromBoolean(true), null);
+    final Json5Array mArr = new Json5Array();
+    mArr.add("<red>This %block_type% is %not_allowed%!</red>");
+    mArr.add("<dark_gray>»</dark_gray> <gray>%blocked_value%</gray>");
+    addJSONObj(nObj, "text", mArr, null);
+    final Json5Object mPlayers = new Json5Object();
+    addJSONObj(mPlayers, "online", Json5Primitive.fromNumber(0), null);
+    addJSONObj(mPlayers, "max", Json5Primitive.fromNumber(0), null);
+    final Json5Array hArr = new Json5Array();
+    hArr.add("<blue>Join our discord</blue>");
+    hArr.add("<blue>%discord_invite%</blue>");
+    addJSONObj(mPlayers, "hover", hArr, null);
+    addJSONObj(nObj, "players", mPlayers, null);
+    addJSONObj(obj, "motd", nObj, null);
     final Json5Object bObj = new Json5Object();
     final Json5Array origins = new Json5Array();
     origins.add(".*eaglerhackedclients\\.vercel\\.app.*");
@@ -302,9 +315,12 @@ public final class OriginBlacklistConfig {
     addJSONObj(bObj, "ip_addresses", ips, null);
     addJSONObj(obj, "blacklist", bObj, null);
     final Json5Object dObj = new Json5Object();
-    addJSONObj(dObj, "enabled", Json5Primitive.fromBoolean(false), null);
-    addJSONObj(dObj, "webhook_urls", new Json5Array(), null);
-    addJSONObj(dObj, "send_ips", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(dObj, "invite", Json5Primitive.fromString("discord.gg/changeme"), null);
+    final Json5Object webhook = new Json5Object();
+    addJSONObj(webhook, "enabled", Json5Primitive.fromBoolean(false), null);
+    addJSONObj(webhook, "webhook_urls", new Json5Array(), null);
+    addJSONObj(webhook, "send_ips", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(dObj, "webhook", webhook, null);
     addJSONObj(obj, "discord", dObj, null);
     final Json5Object uObj = new Json5Object();
     addJSONObj(uObj, "enabled", Json5Primitive.fromBoolean(true), null);
@@ -317,7 +333,7 @@ public final class OriginBlacklistConfig {
     addJSONObj(obj, "block_undefined_origin", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "bStats", Json5Primitive.fromBoolean(true), null);
     addJSONObj(obj, "logFile", Json5Primitive.fromBoolean(true), null);
-    addJSONObj(obj, "config_version", Json5Primitive.fromNumber(1), "DO NOT CHANGE");
+    addJSONObj(obj, "config_version", Json5Primitive.fromNumber(LATEST_CONFIG_VERSION), "DO NOT CHANGE");
     return obj;
   }
 
