@@ -5,7 +5,7 @@ import xyz.webmc.originblacklist.base.enums.EnumConnectionType;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
-import xyz.webmc.originblacklist.base.util.EventPriority;
+import xyz.webmc.originblacklist.base.util.EaglerEventPriority;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.IncompatibleDependencyException;
 import xyz.webmc.originblacklist.base.util.OPlayer;
@@ -92,7 +92,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     this.proxy.getCommandManager().register("originblacklist", new OriginBlacklistCommandVelocity(this.blacklist));
     this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
-      this.metrics = this.metricsFactory.make(this, OriginBlacklist.BSTATS_ID);
+      this.metrics = this.metricsFactory.make(this, OriginBlacklist.BSTATS.VELOCITY);
       this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
         final Map<String, Integer> playerMap = new HashMap<>();
 
@@ -118,7 +118,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(event, null, EnumConnectionType.EAGLER, player));
   }
 
-  @Subscribe(priority = EventPriority.EAGLER_MOTD_EVENT, order = PostOrder.LAST)
+  @Subscribe(priority = EaglerEventPriority.EAGLER_MOTD_EVENT, order = PostOrder.LAST)
   public final void onEaglerMOTD(final EaglercraftMOTDEvent event) {
     final OPlayer player = new OPlayer(event.getMOTDConnection(), null, null);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(event, null, EnumConnectionType.EAGLER, player));

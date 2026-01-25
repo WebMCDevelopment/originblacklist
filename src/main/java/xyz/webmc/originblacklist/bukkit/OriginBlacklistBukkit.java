@@ -76,7 +76,7 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
     this.getServer().getPluginManager().registerEvents(this, this);
     this.blacklist.init();
     if (this.blacklist.isMetricsEnabled()) {
-      this.metrics = new Metrics(this, OriginBlacklist.BSTATS_ID);
+      this.metrics = new Metrics(this, OriginBlacklist.BSTATS.BUKKIT);
       this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
         final Map<String, Integer> playerMap = new HashMap<>();
 

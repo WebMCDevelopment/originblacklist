@@ -52,7 +52,6 @@ public final class OriginBlacklist {
   public static final String UNKNOWN_STR = "UNKNOWN";
   public static final String CENSORED_STR = "CENSORED";
   public static final String PLUGIN_REPO = "WebMCDevelopment/originblacklist";
-  public static final int BSTATS_ID = 28776;
 
   private final IOriginBlacklistPlugin plugin;
   private final OriginBlacklistConfig config;
@@ -502,5 +501,11 @@ public final class OriginBlacklist {
 
   public static final boolean isNonNull(final String str) {
     return str != null && !str.isEmpty() && !str.isBlank() && !str.equals("null");
+  }
+
+  public static final class BSTATS {
+    public static final int VELOCITY = 29033;
+    public static final int BUNGEE = 29034;
+    public static final int BUKKIT = 29035;
   }
 }
