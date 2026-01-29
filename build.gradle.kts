@@ -43,7 +43,7 @@ val EAGXS_VER = "1.0.8"
 plugins {
   id("java")
   id("com.gradleup.shadow") version "9.3.1"
-  id("com.palantir.git-version") version "4.2.0"
+  id("com.palantir.git-version") version "4.3.0"
   id("xyz.jpenilla.run-paper") version "3.0.2"
   id("xyz.jpenilla.run-waterfall") version "3.0.2"
   id("xyz.jpenilla.run-velocity") version "3.0.2"
@@ -65,7 +65,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+  compileOnly("com.velocitypowered:velocity-api:3.5.0-SNAPSHOT")
   compileOnly("org.bukkit:bukkit:1.8-R0.1-SNAPSHOT")
   compileOnly("net.md-5:bungeecord-api:1.21-R0.5-SNAPSHOT")
   compileOnly("net.lax1dude.eaglercraft.backend:api-velocity:1.0.0")
