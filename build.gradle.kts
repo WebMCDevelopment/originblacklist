@@ -66,7 +66,7 @@ repositories {
 
 dependencies {
   compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-  compileOnly("org.bukkit:bukkit:1.8-R0.1-SNAPSHOT")
+  compileOnly("org.bukkit:bukkit:1.20.5-R0.1-SNAPSHOT")
   compileOnly("net.md-5:bungeecord-api:1.21-R0.5-SNAPSHOT")
   compileOnly("net.lax1dude.eaglercraft.backend:api-velocity:1.0.0")
   compileOnly("net.lax1dude.eaglercraft.backend:api-bungee:1.0.0")
