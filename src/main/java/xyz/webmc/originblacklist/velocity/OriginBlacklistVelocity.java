@@ -14,9 +14,7 @@ import xyz.webmc.originblacklist.velocity.command.OriginBlacklistCommandVelocity
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import com.google.inject.Inject;
@@ -39,13 +37,11 @@ import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.EaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftLoginEvent;
 import net.lax1dude.eaglercraft.backend.server.api.velocity.event.EaglercraftMOTDEvent;
-import org.bstats.charts.AdvancedPie;
-import org.bstats.velocity.Metrics;
 import org.bstats.velocity.Metrics.Factory;
 import org.semver4j.Semver;
 import org.slf4j.Logger;
 
-@SuppressWarnings({ "deprecation", "unchecked", "rawtypes" })
+@SuppressWarnings({ "deprecation", "rawtypes" })
 public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   private final PluginContainer plugin;
   private final Factory metricsFactory;
@@ -55,7 +51,6 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   private boolean papiPlaceholdersEnabled;
   private Object papi;
   private OriginBlacklist blacklist;
-  private Metrics metrics;
 
   @Inject
   public OriginBlacklistVelocity(final PluginContainer plugin, Factory metricsFactory, final ProxyServer proxy,
@@ -67,7 +62,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   }
 
   @Subscribe
-  public final void onProxyInitialization(ProxyInitializeEvent event) {
+  public final void onProxyInitialization(final ProxyInitializeEvent event) {
     this.proxy.getPluginManager().getPlugin("eaglerxserver").ifPresentOrElse(plugin -> {
       final Semver version = new Semver(plugin.getDescription().getVersion().orElse("1.0.0"));
       if (version.isLowerThan(OriginBlacklist.REQUIRED_API_VER)) {
@@ -91,20 +86,6 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     this.blacklist = new OriginBlacklist(this);
     this.proxy.getCommandManager().register("originblacklist", new OriginBlacklistCommandVelocity(this.blacklist));
     this.blacklist.init();
-    if (this.blacklist.isMetricsEnabled()) {
-      this.metrics = this.metricsFactory.make(this, OriginBlacklist.BSTATS.VELOCITY);
-      this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
-        final Map<String, Integer> playerMap = new HashMap<>();
-
-        for (final Player player : this.proxy.getAllPlayers()) {
-          final boolean eagler = this.getEaglerAPI().isEaglerPlayerByUUID(player.getUniqueId());
-          final String key = eagler ? "Eagler" : "Java";
-          playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
-        }
-
-        return playerMap;
-      }));
-    }
   }
 
   @Subscribe
@@ -171,6 +152,11 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
     } catch (final Throwable t) {
       throw new RuntimeException("Unable to determine plugin JAR path");
     }
+  }
+
+  @Override
+  public final VelocityMetricsAdapter getMetrics() {
+    return new VelocityMetricsAdapter(this, this.metricsFactory);
   }
 
   @Override
@@ -254,7 +240,6 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
 
   @Override
   public final void shutdown() {
-    this.metrics.shutdown();
     for (ScheduledTask task : this.proxy.getScheduler().tasksByPlugin(this.plugin)) {
       task.cancel();
     }

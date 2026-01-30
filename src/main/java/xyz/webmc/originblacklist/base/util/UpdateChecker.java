@@ -5,6 +5,7 @@ import xyz.webmc.originblacklist.base.OriginBlacklist;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 
 import de.marhali.json5.Json5;
@@ -20,7 +21,7 @@ public final class UpdateChecker {
   public static final String checkForUpdates(final String repo, final Semver currentVersion,
       final boolean allowSnapshots) {
     try {
-      final URL url = new URL("https://api.github.com/repos/" + repo + "/releases");
+      final URL url = (new URI("https://api.github.com/repos/" + repo + "/releases")).toURL();
       final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
       conn.setRequestMethod("GET");
       conn.setConnectTimeout(5000);
@@ -75,7 +76,7 @@ public final class UpdateChecker {
             comm = "";
           }
           if (ver.isGreaterThan(currentVersion) || (allowSnapshots && currentVersion.diff(ver) == VersionDiff.BUILD
-              && OriginBlacklist.isNonNull(comm) && !BuildInfo.get("git_cm_hash").startsWith(comm))) {
+              && OriginBlacklist.isNonNullStr(comm) && !BuildInfo.get("git_cm_hash").startsWith(comm))) {
             element = obj.get("assets");
             if (element instanceof Json5Array) {
               final Json5Array aArr = element.getAsJson5Array();

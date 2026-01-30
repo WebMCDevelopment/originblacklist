@@ -3,6 +3,7 @@ package xyz.webmc.originblacklist.base.util;
 import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
+import xyz.webmc.originblacklist.base.metrics.GenericMetricsAdapter;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,8 @@ public interface IOriginBlacklistPlugin {
   public Semver getPluginVersion();
 
   public Path getPluginJarPath();
+
+  public GenericMetricsAdapter getMetrics();
 
   public IEaglerXServerAPI getEaglerAPI();
 

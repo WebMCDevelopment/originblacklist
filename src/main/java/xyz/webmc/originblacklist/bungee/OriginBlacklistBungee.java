@@ -14,8 +14,6 @@ import xyz.webmc.originblacklist.bungee.command.OriginBlacklistCommandBungee;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import net.kyori.adventure.text.Component;
@@ -34,8 +32,6 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.event.EventHandler;
 import net.md_5.bungee.event.EventPriority;
-import org.bstats.bungeecord.Metrics;
-import org.bstats.charts.AdvancedPie;
 import org.semver4j.Semver;
 
 @SuppressWarnings({ "deprecation", "rawtypes" })
@@ -44,7 +40,6 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   private boolean papiPlaceholdersEnabled;
   private Object papi;
   private OriginBlacklist blacklist;
-  private Metrics metrics;
 
   @Override
   public final void onEnable() {
@@ -75,20 +70,6 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
         new OriginBlacklistCommandBungee(this, this.blacklist, "originblacklist"));
     this.getProxy().getPluginManager().registerListener(this, this);
     this.blacklist.init();
-    if (this.blacklist.isMetricsEnabled()) {
-      this.metrics = new Metrics(this, OriginBlacklist.BSTATS.BUNGEE);
-      this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
-        final Map<String, Integer> playerMap = new HashMap<>();
-
-        for (final ProxiedPlayer player : this.proxy.getPlayers()) {
-          final boolean eagler = this.getEaglerAPI().isEaglerPlayerByUUID(player.getUniqueId());
-          final String key = eagler ? "Eagler" : "Java";
-          playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
-        }
-
-        return playerMap;
-      }));
-    }
   }
 
   @Override
@@ -150,6 +131,11 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   @Override
   public final Path getPluginJarPath() {
     return Paths.get(this.getFile().getAbsolutePath());
+  }
+
+  @Override
+  public final BungeeMetricsAdapter getMetrics() {
+    return new BungeeMetricsAdapter(this);
   }
 
   @Override
@@ -226,7 +212,6 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
 
   @Override
   public final void shutdown() {
-    this.metrics.shutdown();
     this.proxy.getScheduler().cancel(this);
   }
 }

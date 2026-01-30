@@ -85,7 +85,7 @@ public final class OPlayer {
   }
 
   private static final String formatIPAddress(String addr) {
-    if (OriginBlacklist.isNonNull(addr)) {
+    if (OriginBlacklist.isNonNullStr(addr)) {
       if (addr.startsWith("/")) {
         addr = addr.substring(1);
       }

@@ -132,7 +132,7 @@ public final class OriginBlacklistConfig {
   public final Json5Element get(final String key) {
     Json5Element element = null;
 
-    if (this.config != null && OriginBlacklist.isNonNull(key)) {
+    if (this.config != null && OriginBlacklist.isNonNullStr(key)) {
       element = this.config;
       final String[] parts = splitPath(key);
 
@@ -493,7 +493,7 @@ public final class OriginBlacklistConfig {
 
   private static final void addJSONObj(final Json5Object obj, final String key, final Json5Element value,
       final String comment) {
-    if (OriginBlacklist.isNonNull(comment)) {
+    if (OriginBlacklist.isNonNullStr(comment)) {
       value.setComment(comment);
     }
     obj.add(key, value);
@@ -502,7 +502,7 @@ public final class OriginBlacklistConfig {
   private static final String[] splitPath(final String key) {
     final String[] ret;
 
-    if (OriginBlacklist.isNonNull(key)) {
+    if (OriginBlacklist.isNonNullStr(key)) {
       ret = key.split("\\.");
     } else {
       ret = new String[0];

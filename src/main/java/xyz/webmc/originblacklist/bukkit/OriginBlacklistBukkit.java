@@ -137,6 +137,11 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
   }
 
   @Override
+  public final BukkitMetricsAdapter getMetrics() {
+    return new BukkitMetricsAdapter(this);
+  }
+
+  @Override
   public final IEaglerXServerAPI getEaglerAPI() {
     return EaglerXServerAPI.instance();
   }
@@ -248,7 +253,6 @@ public final class OriginBlacklistBukkit extends JavaPlugin implements Listener,
 
   @Override
   public final void shutdown() {
-    this.metrics.shutdown();
     Bukkit.getScheduler().cancelTasks(this);
   }
 }

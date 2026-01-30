@@ -7,6 +7,7 @@ import xyz.webmc.originblacklist.base.enums.EnumLogLevel;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistLoginEvent;
 import xyz.webmc.originblacklist.base.events.OriginBlacklistMOTDEvent;
 import xyz.webmc.originblacklist.base.http.OriginBlacklistRequestHandler;
+import xyz.webmc.originblacklist.base.metrics.GenericMetricsAdapter;
 import xyz.webmc.originblacklist.base.util.BuildInfo;
 import xyz.webmc.originblacklist.base.util.IOriginBlacklistPlugin;
 import xyz.webmc.originblacklist.base.util.OPlayer;
@@ -15,6 +16,7 @@ import xyz.webmc.originblacklist.base.util.UpdateChecker;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +28,9 @@ import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import de.marhali.json5.Json5;
@@ -38,8 +42,11 @@ import inet.ipaddr.IPAddressString;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.lax1dude.eaglercraft.backend.server.api.IBasePlayer;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerPlayer;
 import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
 import net.lax1dude.eaglercraft.backend.server.api.query.IMOTDConnection;
+import org.bstats.charts.AdvancedPie;
 import org.semver4j.Semver;
 
 @SuppressWarnings({ "rawtypes" })
@@ -55,6 +62,7 @@ public final class OriginBlacklist {
 
   private final IOriginBlacklistPlugin plugin;
   private final OriginBlacklistConfig config;
+  private final GenericMetricsAdapter metrics;
   private final Json5 json5;
   private String updateURL;
   private Path jarFile;
@@ -62,6 +70,7 @@ public final class OriginBlacklist {
   public OriginBlacklist(final IOriginBlacklistPlugin plugin) {
     this.plugin = plugin;
     this.config = new OriginBlacklistConfig(this);
+    this.metrics = plugin.getMetrics();
     this.json5 = Json5.builder(builder -> builder.prettyPrinting().indentFactor(0).build());
   }
 
@@ -73,14 +82,33 @@ public final class OriginBlacklist {
     if (this.isBlacklistAPIEnabled()) {
       OriginBlacklistRequestHandler.register(this);
     }
+    this.metrics.addCustomChart(new AdvancedPie("player_types", () -> {
+      final Map<String, Integer> playerMap = new HashMap<>();
+      for (final Object player : this.getEaglerAPI().getAllPlayers()) {
+        if (player instanceof IBasePlayer bPlayer) {
+          final String key = (bPlayer instanceof IEaglerPlayer) ? "Eagler" : "Java";
+          playerMap.put(key, playerMap.getOrDefault(key, 0) + 1);
+        }
+      }
+      return playerMap;
+    }));
     this.plugin.log(EnumLogLevel.INFO, "Initialized Plugin");
     this.plugin.log(EnumLogLevel.DEBUG, "Commit " + COMMIT_L);
+    if (this.isMetricsEnabled()) {
+      this.metrics.start();
+    }
+    this.plugin.scheduleRepeat(() -> {
+      this.plugin.log(EnumLogLevel.INFO, String.valueOf(this.isMetricsEnabled()));
+    }, 1, TimeUnit.SECONDS);
   }
 
   public final void shutdown() {
     this.plugin.log(EnumLogLevel.INFO, "Shutting down...");
     if (this.isBlacklistAPIEnabled()) {
       OriginBlacklistRequestHandler.unRegister(this);
+    }
+    if (this.isMetricsEnabled()) {
+      this.metrics.shutdown();
     }
     this.plugin.shutdown();
   }
@@ -91,6 +119,14 @@ public final class OriginBlacklist {
         OriginBlacklistRequestHandler.register(this);
       } else {
         OriginBlacklistRequestHandler.unRegister(this);
+      }
+    } catch (final Throwable t) {
+    }
+    try {
+      if (this.isMetricsEnabled()) {
+        this.metrics.start();
+      } else {
+        this.metrics.shutdown();
       }
     } catch (final Throwable t) {
     }
@@ -117,7 +153,7 @@ public final class OriginBlacklist {
           blacklisted_value, blacklisted.getActionString(), false), event);
       this.sendWebhooks(event, blacklisted);
       final String name = player.getName();
-      if (isNonNull(name)) {
+      if (isNonNullStr(name)) {
         this.plugin.log(EnumLogLevel.INFO, "Prevented blacklisted player " + name + " from joining.");
         this.updateLogFile(event, blacklisted);
       }
@@ -181,7 +217,8 @@ public final class OriginBlacklist {
     }
     final List<String> pLst = new ArrayList<>();
     for (final Json5Element ln : this.config.getArray("motd.players.hover").getAsJson5Array()) {
-      pLst.add(getLegacyFromMiniMessage(ln.getAsString().replaceAll("%discord_invite%", this.config.getString("discord.invite"))));
+      pLst.add(getLegacyFromMiniMessage(
+          ln.getAsString().replaceAll("%discord_invite%", this.config.getString("discord.invite"))));
     }
     conn.setServerMOTD(lst);
     conn.setPlayerTotal(this.config.getInteger("motd.players.online"));
@@ -197,7 +234,7 @@ public final class OriginBlacklist {
       this.plugin.runAsync(() -> {
         this.updateURL = UpdateChecker.checkForUpdates(PLUGIN_REPO, this.plugin.getPluginVersion(),
             this.config.getBoolean("update_checker.allow_snapshots"));
-        if (isNonNull((this.updateURL))) {
+        if (isNonNullStr((this.updateURL))) {
           action1.run();
           return;
         }
@@ -210,7 +247,7 @@ public final class OriginBlacklist {
 
   public final void updatePlugin(final Runnable action1, final Runnable action2) {
     try {
-      final URL url = new URL(this.updateURL);
+      final URL url = (new URI(this.updateURL)).toURL();
       final Path jar = this.jarFile;
       final Path bak = jar.resolveSibling(jar.getFileName().toString() + ".bak");
       final Path upd = jar
@@ -240,8 +277,8 @@ public final class OriginBlacklist {
         action1.run();
         return;
       } catch (final Throwable t) {
-        t.printStackTrace();
         Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
+        throw t;
       }
     } catch (final Throwable t) {
       t.printStackTrace();
@@ -264,7 +301,7 @@ public final class OriginBlacklist {
     final boolean whitelist = this.config.getBoolean("blacklist_to_whitelist");
     EnumBlacklistType type = EnumBlacklistType.NONE;
 
-    if (isNonNull(origin)) {
+    if (isNonNullStr(origin)) {
       if (whitelist && !type.isBlacklisted())
         type = EnumBlacklistType.ORIGIN;
       for (final Json5Element element : this.config.getArray("blacklist.origins").getAsJson5Array()) {
@@ -280,7 +317,7 @@ public final class OriginBlacklist {
       return whitelist ? EnumBlacklistType.NONE : EnumBlacklistType.ORIGIN;
     }
 
-    if (isNonNull(brand)) {
+    if (isNonNullStr(brand)) {
       if (whitelist && !type.isBlacklisted())
         type = EnumBlacklistType.BRAND;
       for (final Json5Element element : this.config.getArray("blacklist.brands")) {
@@ -294,7 +331,7 @@ public final class OriginBlacklist {
       }
     }
 
-    if (isNonNull(name)) {
+    if (isNonNullStr(name)) {
       if (whitelist && !type.isBlacklisted())
         type = EnumBlacklistType.NAME;
       for (final Json5Element element : this.config.getArray("blacklist.player_names")) {
@@ -308,7 +345,7 @@ public final class OriginBlacklist {
       }
     }
 
-    if (isNonNull(addr)) {
+    if (isNonNullStr(addr)) {
       if (whitelist && !type.isBlacklisted())
         type = EnumBlacklistType.ADDR;
       for (final Json5Element element : this.config.getArray("blacklist.ip_addresses")) {
@@ -446,7 +483,7 @@ public final class OriginBlacklist {
       for (final Json5Element element : arr) {
         this.plugin.runAsync(() -> {
           try {
-            final URL url = new URL(element.getAsString());
+            final URL url = (new URI(element.getAsString())).toURL();
             final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
@@ -519,7 +556,7 @@ public final class OriginBlacklist {
     return BuildInfo.get("plugin_name") + "/" + BuildInfo.get("plugin_vers") + "+" + BuildInfo.get("git_cm_hash");
   }
 
-  public static final boolean isNonNull(final String str) {
+  public static final boolean isNonNullStr(final String str) {
     return str != null && !str.isEmpty() && !str.isBlank() && !str.equals("null");
   }
 

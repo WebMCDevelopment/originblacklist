@@ -24,6 +24,11 @@
 - [x] Modular multi-platform support
 - [x] JSON5 based configuration
 
+<h2>Requirements</h2>
+
+- Eagler(craft)XServer v1.0.2 or newer
+- JDK 21 or newer
+
 <h2>Download</h2>
 The latest release can be found at <b><a href="https://github.com/WebMCDevelopment/originblacklist/releases/latest/">https://github.com/WebMCDevelopment/originblacklist/releases/latest/</a></b>
 

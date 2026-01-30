@@ -8,12 +8,12 @@ import net.lax1dude.eaglercraft.backend.server.api.webserver.IRequestContext;
 import net.lax1dude.eaglercraft.backend.server.api.webserver.IRequestHandler;
 import net.lax1dude.eaglercraft.backend.server.api.webserver.RouteDesc;
 
-public class OriginBlacklistRequestHandler implements IRequestHandler {
+public final class OriginBlacklistRequestHandler implements IRequestHandler {
   private static final RouteDesc route = RouteDesc.create("/originblacklist/v2/");
   private final OriginBlacklist plugin;
 
   public OriginBlacklistRequestHandler(final OriginBlacklist plugin) {
-    this.plugin = plugin; 
+    this.plugin = plugin;
   }
 
   @Override

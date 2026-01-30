@@ -54,7 +54,7 @@ public class OriginBlacklistCommand implements ICommand {
           } else {
             ctx.reply(NO_PERMISSION);
           }
-        } else if ((add || remove) && OriginBlacklist.isNonNull(argB)) {
+        } else if ((add || remove) && OriginBlacklist.isNonNullStr(argB)) {
           if ((add && ctx.hasPermission("originblacklist.command.add"))
               || (remove && ctx.hasPermission("originblacklist.command.add"))) {
             final String arrName;
@@ -69,7 +69,7 @@ public class OriginBlacklistCommand implements ICommand {
             } else {
               arrName = null;
             }
-            if (OriginBlacklist.isNonNull(arrName)) {
+            if (OriginBlacklist.isNonNullStr(arrName)) {
               final String arrPath = "blacklist." + arrName;
               final Json5Array arr = config.getArray(arrPath);
               if (add) {
@@ -95,7 +95,7 @@ public class OriginBlacklistCommand implements ICommand {
           } else {
             ctx.reply(NO_PERMISSION);
           }
-        } else if ("test".equalsIgnoreCase(command) && OriginBlacklist.isNonNull(argA)) {
+        } else if ("test".equalsIgnoreCase(command) && OriginBlacklist.isNonNullStr(argA)) {
           if (ctx.hasPermission("originblacklist.command.test")) {
             if (this.isBlacklisted(argA)) {
               ctx.reply("<green>" + argA + " is on the blacklist.</green>");

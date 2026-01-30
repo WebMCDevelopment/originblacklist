@@ -14,7 +14,7 @@ val PLUGIN_NAME = "OriginBlacklist"
 val PLUGIN_IDEN = "originblacklist"
 val PLUGIN_DOMN = "xyz.webmc.$PLUGIN_IDEN"
 val PLUGIN_DESC = "An eaglercraft client blacklist plugin."
-val PLUGIN_VERS = "2.0.8"
+val PLUGIN_VERS = "2.0.9"
 val PLUGIN_SITE = "https://github.com/WebMCDevelopment/$PLUGIN_IDEN"
 val PLUGIN_DEPA = listOf("EaglercraftXServer")
 val PLUGIN_DEPB = listOf("EaglercraftXServer")
@@ -91,7 +91,7 @@ sourceSets {
 }
 
 java {
-  toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+  toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 }
 
 val BUILD_PROPS = mapOf(
@@ -113,7 +113,7 @@ val BUILD_PROPS = mapOf(
 
 tasks.withType<JavaCompile>().configureEach {
   options.encoding = "UTF-8"
-  options.release.set(17)
+  options.release.set(21)
 }
 
 tasks.withType<ProcessResources>().configureEach {
