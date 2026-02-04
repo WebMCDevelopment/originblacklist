@@ -271,11 +271,13 @@ public final class OriginBlacklist {
         } finally {
           conn.disconnect();
         }
-        Files.delete(jar);
-        Files.delete(bak);
-        this.jarFile = upd;
-        action1.run();
-        return;
+        if (Files.exists(upd)) {
+          Files.delete(jar);
+          Files.delete(bak);
+          this.jarFile = upd;
+          action1.run();
+          return;
+        }
       } catch (final Throwable t) {
         Files.move(bak, jar, StandardCopyOption.REPLACE_EXISTING);
         throw t;
