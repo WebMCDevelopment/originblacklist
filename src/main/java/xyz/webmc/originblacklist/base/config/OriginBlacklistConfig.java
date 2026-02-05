@@ -326,7 +326,7 @@ public final class OriginBlacklistConfig {
     addJSONObj(uObj, "enabled", Json5Primitive.fromBoolean(true), null);
     addJSONObj(uObj, "allow_snapshots", Json5Primitive.fromBoolean(false), null);
     addJSONObj(uObj, "check_timer", Json5Primitive.fromNumber(3600), null);
-    addJSONObj(uObj, "auto_update", Json5Primitive.fromBoolean(true), null);
+    addJSONObj(uObj, "auto_update", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "update_checker", uObj, null);
     addJSONObj(obj, "blacklist_http_api", Json5Primitive.fromBoolean(false), null);
     addJSONObj(obj, "blacklist_to_whitelist", Json5Primitive.fromBoolean(false), null);
