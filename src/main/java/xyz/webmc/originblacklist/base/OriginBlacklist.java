@@ -97,9 +97,6 @@ public final class OriginBlacklist {
     if (this.isMetricsEnabled()) {
       this.metrics.start();
     }
-    this.plugin.scheduleRepeat(() -> {
-      this.plugin.log(EnumLogLevel.INFO, String.valueOf(this.isMetricsEnabled()));
-    }, 1, TimeUnit.SECONDS);
   }
 
   public final void shutdown() {
