@@ -71,13 +71,13 @@ dependencies {
   compileOnly("net.lax1dude.eaglercraft.backend:api-velocity:1.0.0")
   compileOnly("net.lax1dude.eaglercraft.backend:api-bungee:1.0.0")
   compileOnly("net.lax1dude.eaglercraft.backend:api-bukkit:1.0.0")
-  compileOnly("me.clip:placeholderapi:2.11.7")
+  compileOnly("me.clip:placeholderapi:2.12.1")
   compileOnly("net.william278:papiproxybridge:1.8.4")
   implementation("org.semver4j:semver4j:6.0.0")
   implementation("de.marhali:json5-java:3.0.0")
   implementation("net.kyori:adventure-text-minimessage:4.26.1")
   implementation("net.kyori:adventure-text-serializer-legacy:4.26.1")
-  implementation("com.github.seancfoley:ipaddress:5.5.1")
+  implementation("com.github.seancfoley:ipaddress:5.6.1")
   implementation("org.bstats:bstats-bukkit:3.1.0")
   implementation("org.bstats:bstats-bungeecord:3.1.0")
   implementation("org.bstats:bstats-velocity:3.1.0")
@@ -174,7 +174,7 @@ tasks.withType<RunServer>().configureEach {
   jvmArgs("-Dcom.mojang.eula.agree=true")
   downloadPlugins {
     github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")
-    modrinth("placeholderapi", "2.11.7")
+    modrinth("placeholderapi", "2.12.1")
   }
 }
 
