@@ -94,8 +94,9 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
     final PendingConnection conn = event.getPlayer().getPendingConnection();
     final InetSocketAddress vhost = conn.getVirtualHost();
     final ProxiedPlayer aPlayer = event.getPlayer();
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getName(), aPlayer.getUniqueId(),
-        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), vhost.getHostString() + vhost.getPort(),
+        aPlayer.getAddress().toString(), aPlayer.getClientBrand(), origin,
         conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
@@ -104,8 +105,9 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   public final void onJavaHandshake(final PreLoginEvent event) {
     final PendingConnection conn = event.getConnection();
     final InetSocketAddress vhost = conn.getVirtualHost();
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), OriginBlacklist.UNKNOWN_STR,
-        vhost.getHostString() + vhost.getPort(), conn.getVersion());
+        origin, conn.getVersion());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
@@ -113,8 +115,9 @@ public final class OriginBlacklistBungee extends Plugin implements Listener, IOr
   public final void onJavaMOTD(final ProxyPingEvent event) {
     final PendingConnection conn = event.getConnection();
     final InetSocketAddress vhost = conn.getVirtualHost();
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final OPlayer player = new OPlayer(null, null, null, conn.getAddress().toString(), null,
-        vhost.getHostString() + vhost.getPort(), -1);
+        origin, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
