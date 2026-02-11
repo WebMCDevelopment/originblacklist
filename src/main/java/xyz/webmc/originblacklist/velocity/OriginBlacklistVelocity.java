@@ -108,19 +108,21 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   @Subscribe(order = PostOrder.FIRST)
   public final void onJavaLogin(final PreLoginEvent event) {
     final InboundConnection conn = event.getConnection();
-    final InetSocketAddress vhost = conn.getVirtualHost().orElseThrow();
+    final InetSocketAddress vhost = conn.getVirtualHost().orElse(null);
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final OPlayer player = new OPlayer(null, event.getUsername(), event.getUniqueId(),
-        conn.getRemoteAddress().toString(), OriginBlacklist.UNKNOWN_STR, vhost.getHostString() + vhost.getPort(),
+        conn.getRemoteAddress().toString(), OriginBlacklist.UNKNOWN_STR, origin,
         conn.getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
   @Subscribe(order = PostOrder.FIRST)
   public final void onJavaHandshake(final PlayerClientBrandEvent event) {
-    final InetSocketAddress vhost = event.getPlayer().getVirtualHost().orElseThrow();
+    final InetSocketAddress vhost = event.getPlayer().getVirtualHost().orElse(null);
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final Player aPlayer = event.getPlayer();
     final OPlayer bPlayer = new OPlayer(null, aPlayer.getUsername(), aPlayer.getUniqueId(),
-        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand(), vhost.getHostString() + vhost.getPort(),
+        aPlayer.getRemoteAddress().getAddress().toString(), event.getBrand(), origin,
         event.getPlayer().getProtocolVersion().getProtocol());
     this.blacklist.handleLogin(new OriginBlacklistLoginEvent(null, event, EnumConnectionType.JAVA, bPlayer));
   }
@@ -128,10 +130,10 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
   @Subscribe(order = PostOrder.LAST)
   public final void onJavaMOTD(final ProxyPingEvent event) {
     final InboundConnection conn = event.getConnection();
-    final InetSocketAddress vhost = conn.getVirtualHost().orElseThrow();
+    final InetSocketAddress vhost = conn.getVirtualHost().orElse(null);
+    final String origin = vhost != null ? vhost.getHostString() + vhost.getPort() : OriginBlacklist.UNKNOWN_STR;
     final OPlayer player = new OPlayer(null, null, null, conn.getRemoteAddress().getHostString(),
-        vhost.getHostString() + vhost.getPort(),
-        null, -1);
+        null, origin, -1);
     this.blacklist.handleMOTD(new OriginBlacklistMOTDEvent(null, event, EnumConnectionType.JAVA, player));
   }
 
