@@ -111,12 +111,12 @@ val BUILD_PROPS = mapOf(
   "git_cm_hash" to GIT_INFO.gitHashFull,
 )
 
-tasks.withType<JavaCompile>().configureEach {
+tasks.named<JavaCompile>("compileJava") {
   options.encoding = "UTF-8"
   options.release.set(21)
 }
 
-tasks.withType<ProcessResources>().configureEach {
+tasks.named<ProcessResources>("processResources") {
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   outputs.upToDateWhen { false }
   
@@ -139,11 +139,12 @@ tasks.withType<ProcessResources>().configureEach {
   inputs.files(tasks.named<JavaCompile>("compileJava").map { it.outputs.files })
 }
 
-tasks.withType<Jar>().configureEach {
-  if (this !is ShadowJar) enabled = false
+tasks.named<Jar>("jar") {
+  enabled = false
 }
 
-tasks.withType<ShadowJar>().configureEach {
+tasks.named<ShadowJar>("shadowJar") {
+  enabled = true
   doFirst {
     delete(layout.buildDirectory.dir("libs"))
     mkdir(layout.buildDirectory.dir("libs"))
@@ -168,7 +169,7 @@ tasks.register("printVars") {
   }
 }
 
-tasks.withType<RunServer>().configureEach {
+tasks.named<RunServer>("runServer") {
   minecraftVersion("1.12.2")
   runDirectory.set(layout.projectDirectory.dir("run/paper"))
   jvmArgs("-Dcom.mojang.eula.agree=true")
@@ -178,7 +179,7 @@ tasks.withType<RunServer>().configureEach {
   }
 }
 
-tasks.withType<RunWaterfall>().configureEach {
+tasks.named<RunWaterfall>("runWaterfall") {
   waterfallVersion("1.21")
   runDirectory.set(layout.projectDirectory.dir("run/waterfall"))
   downloadPlugins {
@@ -186,8 +187,8 @@ tasks.withType<RunWaterfall>().configureEach {
   }
 }
 
-tasks.withType<RunVelocity>().configureEach {
-  velocityVersion("3.4.0-SNAPSHOT")
+tasks.named<RunVelocity>("runVelocity") {
+  velocityVersion("3.5.0-SNAPSHOT")
   runDirectory.set(layout.projectDirectory.dir("run/velocity"))
   downloadPlugins {
     github("lax1dude", "eaglerxserver", "v" + EAGXS_VER, "EaglerXServer.jar")

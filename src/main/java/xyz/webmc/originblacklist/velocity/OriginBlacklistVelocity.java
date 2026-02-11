@@ -242,7 +242,7 @@ public final class OriginBlacklistVelocity implements IOriginBlacklistPlugin {
 
   @Override
   public final void shutdown() {
-    for (ScheduledTask task : this.proxy.getScheduler().tasksByPlugin(this.plugin)) {
+    for (final ScheduledTask task : this.proxy.getScheduler().tasksByPlugin(this.plugin)) {
       task.cancel();
     }
   }
