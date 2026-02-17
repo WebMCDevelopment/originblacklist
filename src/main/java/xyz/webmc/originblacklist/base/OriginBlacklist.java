@@ -510,7 +510,8 @@ public final class OriginBlacklist {
 
   private final void checkForUpdates() {
     this.checkForUpdates(() -> {
-      if (!this.config.getBoolean("update_checker.auto_update")) {
+      // if (!this.config.getBoolean("update_checker.auto_update")) {
+      if (true) {
         this.plugin.log(EnumLogLevel.INFO, "An update is available! Download it at " + this.updateURL);
       } else {
         this.updatePlugin();
