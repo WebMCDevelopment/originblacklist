@@ -1,16 +1,17 @@
 package xyz.webmc.originblacklist.bukkit;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.metrics.GenericMetricsAdapter;
-
 import org.bstats.charts.CustomChart;
+
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.metrics.GenericMetricsAdapter;
+
 import org.bstats.bukkit.Metrics;
 
 public final class BukkitMetricsAdapter extends GenericMetricsAdapter {
-  private final OriginBlacklistBukkit plugin;
+  private final OriginBlacklistBukkitPlugin plugin;
   private Metrics metrics;
 
-  public BukkitMetricsAdapter(final OriginBlacklistBukkit plugin) {
+  public BukkitMetricsAdapter(final OriginBlacklistBukkitPlugin plugin) {
     super();
     this.plugin = plugin;
   }

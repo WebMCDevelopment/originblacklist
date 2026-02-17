@@ -1,16 +1,17 @@
 package xyz.webmc.originblacklist.bungee;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.metrics.GenericMetricsAdapter;
-
 import org.bstats.charts.CustomChart;
+
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.metrics.GenericMetricsAdapter;
+
 import org.bstats.bungeecord.Metrics;
 
 public final class BungeeMetricsAdapter extends GenericMetricsAdapter {
-  private final OriginBlacklistBungee plugin;
+  private final OriginBlacklistBungeePlugin plugin;
   private Metrics metrics;
 
-  public BungeeMetricsAdapter(final OriginBlacklistBungee plugin) {
+  public BungeeMetricsAdapter(final OriginBlacklistBungeePlugin plugin) {
     super();
     this.plugin = plugin;
   }

@@ -1,6 +1,6 @@
 name: ${plugin_name}
 version: ${plugin_vers}
-main: xyz.webmc.${plugin_iden}.bukkit.${plugin_name}Bukkit
+main: xyz.webmc.${plugin_iden}.bukkit.${plugin_name}BukkitPlugin
 description: ${plugin_desc}
 website: ${plugin_site}
 authors: ${plugin_athr}

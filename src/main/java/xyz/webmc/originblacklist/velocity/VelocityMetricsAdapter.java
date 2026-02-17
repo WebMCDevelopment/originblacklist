@@ -1,18 +1,18 @@
 package xyz.webmc.originblacklist.velocity;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.metrics.GenericMetricsAdapter;
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.metrics.GenericMetricsAdapter;
 
 import org.bstats.charts.CustomChart;
 import org.bstats.velocity.Metrics;
 import org.bstats.velocity.Metrics.Factory;
 
 public final class VelocityMetricsAdapter extends GenericMetricsAdapter {
-  private final OriginBlacklistVelocity plugin;
+  private final OriginBlacklistVelocityPlugin plugin;
   private final Factory factory;
   private Metrics metrics;
 
-  public VelocityMetricsAdapter(final OriginBlacklistVelocity plugin, final Factory factory) {
+  public VelocityMetricsAdapter(final OriginBlacklistVelocityPlugin plugin, final Factory factory) {
     super();
     this.plugin = plugin;
     this.factory = factory;

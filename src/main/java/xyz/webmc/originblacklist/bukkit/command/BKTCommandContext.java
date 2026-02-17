@@ -1,7 +1,7 @@
 package xyz.webmc.originblacklist.bukkit.command;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.command.CommandContext;
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.command.CommandContext;
 
 import org.bukkit.command.CommandSender;
 

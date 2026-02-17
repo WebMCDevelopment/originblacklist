@@ -1,0 +1,40 @@
+package xyz.webmc.originblacklist.core.util;
+
+import xyz.webmc.originblacklist.core.events.OriginBlacklistLoginEvent;
+import xyz.webmc.originblacklist.core.events.OriginBlacklistMOTDEvent;
+import xyz.webmc.originblacklist.core.logger.AbstractLogger;
+import xyz.webmc.originblacklist.core.metrics.GenericMetricsAdapter;
+
+import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+
+import net.kyori.adventure.text.Component;
+import net.lax1dude.eaglercraft.backend.server.api.IEaglerXServerAPI;
+import org.semver4j.Semver;
+
+@SuppressWarnings({ "rawtypes" })
+public interface IOriginBlacklistPlugin {
+  public String getPluginId();
+
+  public Semver getPluginVersion();
+
+  public Path getPluginJarPath();
+
+  public GenericMetricsAdapter getMetrics();
+
+  public AbstractLogger getTheLogger();
+
+  public IEaglerXServerAPI getEaglerAPI();
+
+  public void kickPlayer(final Component txt, final OriginBlacklistLoginEvent event);
+
+  public void setMOTD(final Component txt, final OriginBlacklistMOTDEvent event);
+
+  public String parsePlaceholders(final OPlayer player, final String str);
+
+  public void scheduleRepeat(final Runnable task, final int period, final TimeUnit unit);
+
+  public void runAsync(final Runnable task);
+
+  public void shutdown();
+}

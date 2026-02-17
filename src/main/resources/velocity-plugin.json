@@ -4,7 +4,7 @@
   "version": "${plugin_vers}",
   "description": "${plugin_desc}",
   "website": "${plugin_site}",
-  "main": "xyz.webmc.${plugin_iden}.velocity.${plugin_name}Velocity",
+  "main": "xyz.webmc.${plugin_iden}.velocity.${plugin_name}VelocityPlugin",
   "authors": ${plugin_athr},
   "dependencies": ${plugin_depc}
 }

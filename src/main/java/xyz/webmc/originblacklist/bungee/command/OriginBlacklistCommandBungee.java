@@ -1,8 +1,8 @@
 package xyz.webmc.originblacklist.bungee.command;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.command.OriginBlacklistCommand;
-import xyz.webmc.originblacklist.bungee.OriginBlacklistBungee;
+import xyz.webmc.originblacklist.bungee.OriginBlacklistBungeePlugin;
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.command.OriginBlacklistCommand;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public final class OriginBlacklistCommandBungee extends Command implements TabEx
   private final OriginBlacklistCommand cmd;
   private final OriginBlacklist blacklist;
 
-  public OriginBlacklistCommandBungee(final OriginBlacklistBungee plugin, final OriginBlacklist blacklist,
+  public OriginBlacklistCommandBungee(final OriginBlacklistBungeePlugin plugin, final OriginBlacklist blacklist,
       final String command) {
     super(command);
     this.cmd = new OriginBlacklistCommand(blacklist);

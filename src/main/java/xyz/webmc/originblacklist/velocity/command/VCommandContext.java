@@ -1,7 +1,7 @@
 package xyz.webmc.originblacklist.velocity.command;
 
-import xyz.webmc.originblacklist.base.OriginBlacklist;
-import xyz.webmc.originblacklist.base.command.CommandContext;
+import xyz.webmc.originblacklist.core.OriginBlacklist;
+import xyz.webmc.originblacklist.core.command.CommandContext;
 
 import com.velocitypowered.api.command.SimpleCommand.Invocation;
 import net.kyori.adventure.text.minimessage.MiniMessage;

@@ -1,6 +1,6 @@
 name: ${plugin_name}
 version: ${plugin_vers}
-main: xyz.webmc.${plugin_iden}.bungee.${plugin_name}Bungee
+main: xyz.webmc.${plugin_iden}.bungee.${plugin_name}BungeePlugin
 description: ${plugin_desc}
 website: ${plugin_site}
 author: ${plugin_athr}
