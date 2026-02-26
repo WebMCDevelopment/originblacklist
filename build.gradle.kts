@@ -78,9 +78,9 @@ dependencies {
   implementation("net.kyori:adventure-text-minimessage:4.26.1")
   implementation("net.kyori:adventure-text-serializer-legacy:4.26.1")
   implementation("com.github.seancfoley:ipaddress:5.6.1")
-  implementation("org.bstats:bstats-bukkit:3.1.0")
-  implementation("org.bstats:bstats-bungeecord:3.1.0")
-  implementation("org.bstats:bstats-velocity:3.1.0")
+  implementation("org.bstats:bstats-bukkit:3.2.1")
+  implementation("org.bstats:bstats-bungeecord:3.2.1")
+  implementation("org.bstats:bstats-velocity:3.2.1")
 }
 
 sourceSets {
