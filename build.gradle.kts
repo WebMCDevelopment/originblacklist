@@ -42,7 +42,7 @@ val EAGXS_VER = "1.0.8"
 
 plugins {
   id("java")
-  id("com.gradleup.shadow") version "9.3.0"
+  id("com.gradleup.shadow") version "9.4.1"
   id("com.palantir.git-version") version "4.2.0"
   id("xyz.jpenilla.run-paper") version "3.0.2"
   id("xyz.jpenilla.run-waterfall") version "3.0.2"
@@ -77,10 +77,10 @@ dependencies {
   implementation("de.marhali:json5-java:3.0.0")
   implementation("net.kyori:adventure-text-minimessage:4.26.1")
   implementation("net.kyori:adventure-text-serializer-legacy:4.26.1")
-  implementation("com.github.seancfoley:ipaddress:5.6.1")
-  implementation("org.bstats:bstats-bukkit:3.1.0")
-  implementation("org.bstats:bstats-bungeecord:3.1.0")
-  implementation("org.bstats:bstats-velocity:3.1.0")
+  implementation("com.github.seancfoley:ipaddress:5.6.2")
+  implementation("org.bstats:bstats-bukkit:3.2.1")
+  implementation("org.bstats:bstats-bungeecord:3.2.1")
+  implementation("org.bstats:bstats-velocity:3.2.1")
 }
 
 sourceSets {
