@@ -44,7 +44,7 @@ plugins {
   id("java")
   id("com.gradleup.shadow") version "9.6.1"
   id("com.palantir.git-version") version "4.2.0"
-  id("xyz.jpenilla.run-paper") version "3.0.2"
+  id("xyz.jpenilla.run-paper") version "3.1.0"
   id("xyz.jpenilla.run-waterfall") version "3.0.2"
   id("xyz.jpenilla.run-velocity") version "3.1.0"
 }
