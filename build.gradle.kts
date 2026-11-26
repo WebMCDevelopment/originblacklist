@@ -73,7 +73,7 @@ dependencies {
   compileOnly("net.lax1dude.eaglercraft.backend:api-bukkit:1.0.0")
   compileOnly("me.clip:placeholderapi:2.12.3")
   compileOnly("net.william278:papiproxybridge:1.8.4")
-  implementation("org.semver4j:semver4j:6.0.0")
+  implementation("org.semver4j:semver4j:6.1.0")
   implementation("de.marhali:json5-java:3.0.0")
   implementation("net.kyori:adventure-text-minimessage:4.26.1")
   implementation("net.kyori:adventure-text-serializer-legacy:4.26.1")
